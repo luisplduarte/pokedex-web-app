@@ -1,30 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { fetchPokemonList } from "@/services/pokeapi";
-import type { Pokemon } from "@/types/pokemon";
+import { usePokemonList } from "@/hooks/usePokemonList";
 
 export default function Home() {
-  const [pokemon, setPokemon] = useState<Pokemon[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetchPokemonList(20)
-      .then((list) => {
-        if (!cancelled) setPokemon(list);
-      })
-      .catch((err) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const { data: pokemon = [], isLoading: loading, error } = usePokemonList(20);
 
   return (
     <div className="min-h-screen bg-zinc-50 px-4 py-8 dark:bg-zinc-950">
@@ -36,7 +15,9 @@ export default function Home() {
           <p className="text-zinc-600 dark:text-zinc-400">Loading…</p>
         )}
         {error && (
-          <p className="text-red-600 dark:text-red-400">Failed to load</p>
+          <p className="text-red-600 dark:text-red-400">
+            {error instanceof Error ? error.message : "Failed to load"}
+          </p>
         )}
         {!loading && !error && pokemon.length > 0 && (
           <ul className="grid gap-4 sm:grid-cols-2">
