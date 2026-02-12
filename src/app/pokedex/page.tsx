@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import Link from "next/link";
 import { usePokemonList } from "@/hooks/usePokemonList";
 import { usePokedexStore } from "@/store/pokedexStore";
@@ -9,32 +10,33 @@ import { Spinner } from "@/components/ui/Spinner";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { PokemonList } from "@/features/pokemon";
 
-export default function Home() {
-  const { data: pokemon = [], isLoading: loading, error } = usePokemonList(20);
-  const caughtIds = usePokedexStore((s) => s.caughtIds);
-  const addCaught = usePokedexStore((s) => s.addCaught);
-  const removeCaught = usePokedexStore((s) => s.removeCaught);
-  const caughtCount = caughtIds.size;
+const LIST_LIMIT = 151;
 
-  const toggleCaught = (id: number, isCaught: boolean) => {
-    if (isCaught) removeCaught(id);
-    else addCaught(id);
-  };
+export default function PokedexPage() {
+  const { data: allPokemon = [], isLoading, error } = usePokemonList(LIST_LIMIT);
+  const caughtIds = usePokedexStore((s) => s.caughtIds);
+
+  const caughtPokemon = useMemo(
+    () => allPokemon.filter((p) => caughtIds.has(p.id)),
+    [allPokemon, caughtIds]
+  );
+
+  const noCaught = caughtIds.size === 0;
 
   return (
     <MainLayout>
-      <PageHeader title="Pokémon">
+      <PageHeader title="My Pokédex">
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          Test caught count: {caughtCount}
+          {caughtIds.size} caught
         </p>
         <Link
-          href="/pokedex"
+          href="/"
           className="mt-2 inline-block text-sm text-blue-600 hover:underline dark:text-blue-400"
         >
-          My Pokédex →
+          ← Back to all Pokémon
         </Link>
       </PageHeader>
-      {loading && (
+      {isLoading && (
         <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
           <Spinner />
           <span>Loading…</span>
@@ -47,11 +49,21 @@ export default function Home() {
           }
         />
       )}
-      {!loading && !error && pokemon.length > 0 && (
+      {!isLoading && !error && noCaught && (
+        <p className="text-zinc-600 dark:text-zinc-400">
+          You haven&apos;t caught any Pokémon yet.{" "}
+          <Link href="/" className="text-blue-600 hover:underline dark:text-blue-400">
+            Catch some on the list
+          </Link>
+          .
+        </p>
+      )}
+      {!isLoading && !error && !noCaught && caughtPokemon.length > 0 && (
         <PokemonList
-          pokemon={pokemon}
+          pokemon={caughtPokemon}
           caughtIds={caughtIds}
-          onToggleCaught={toggleCaught}
+          onToggleCaught={() => {}}
+          showCatchButton={false}
         />
       )}
     </MainLayout>
