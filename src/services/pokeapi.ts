@@ -1,13 +1,37 @@
-import type { Pokemon } from "@/types/pokemon";
+import type { Pokemon, PokemonDetail } from "@/types/pokemon";
 import type {
   PokemonDetailApiResponse,
   PokemonListApiResponse,
 } from "@/types/api";
 import { POKEAPI_BASE_URL } from "@/lib/constants";
 
+const STAT_NAMES: (keyof PokemonDetail["stats"])[] = [
+  "hp",
+  "attack",
+  "defense",
+  "special-attack",
+  "special-defense",
+  "speed",
+];
+
 function getPokemonIdFromUrl(url: string): number {
   const parts = url.replace(/\/$/, "").split("/");
   return parseInt(parts[parts.length - 1] ?? "0", 10);
+}
+
+function mapStatsFromApi(
+  stats: PokemonDetailApiResponse["stats"]
+): PokemonDetail["stats"] {
+  const byName = Object.fromEntries(
+    stats.map((s) => [s.stat.name, s.base_stat])
+  );
+  return STAT_NAMES.reduce(
+    (acc, key) => {
+      acc[key] = Number(byName[key]) || 0;
+      return acc;
+    },
+    {} as PokemonDetail["stats"]
+  );
 }
 
 function mapDetailToPokemon(detail: PokemonDetailApiResponse): Pokemon {
@@ -16,6 +40,17 @@ function mapDetailToPokemon(detail: PokemonDetailApiResponse): Pokemon {
     name: detail.name,
     imageUrl: detail.sprites.front_default ?? null,
     types: detail.types.map((t) => t.type.name),
+  };
+}
+
+function mapDetailResponseToPokemonDetail(
+  detail: PokemonDetailApiResponse
+): PokemonDetail {
+  return {
+    ...mapDetailToPokemon(detail),
+    height: detail.height,
+    weight: detail.weight,
+    stats: mapStatsFromApi(detail.stats),
   };
 }
 
@@ -43,4 +78,17 @@ export async function fetchPokemonList(
   );
 
   return details.map(mapDetailToPokemon);
+}
+
+/**
+ * Fetches a single Pokémon by id from PokéAPI.
+ * Returns full detail: height, weight, stats, plus list fields.
+ */
+export async function fetchPokemonById(id: number): Promise<PokemonDetail> {
+  const res = await fetch(`${POKEAPI_BASE_URL}/pokemon/${id}`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch pokemon ${id}: ${res.status}`);
+  }
+  const data: PokemonDetailApiResponse = await res.json();
+  return mapDetailResponseToPokemonDetail(data);
 }

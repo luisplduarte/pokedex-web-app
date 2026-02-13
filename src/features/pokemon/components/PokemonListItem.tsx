@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Pokemon } from "@/types/pokemon";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -35,7 +36,12 @@ export function PokemonListItem({
       )}
       <div className="min-w-0 flex-1">
         <p className="font-medium capitalize text-zinc-900 dark:text-zinc-100">
-          {pokemon.name}
+          <Link
+            href={`/pokemon/${pokemon.id}`}
+            className="text-blue-600 hover:underline dark:text-blue-400"
+          >
+            {pokemon.name}
+          </Link>
         </p>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
           {pokemon.types.length ? pokemon.types.join(", ") : "—"}
