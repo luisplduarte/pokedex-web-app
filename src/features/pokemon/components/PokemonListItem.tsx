@@ -8,6 +8,9 @@ interface PokemonListItemProps {
   onToggle: () => void;
   /** When false, the Catch/Release button is hidden (e.g. on Pokédex page). Default true. */
   showCatchButton?: boolean;
+  /** When true, show a Release button that calls onRemove (e.g. on Pokédex page). */
+  showRemoveButton?: boolean;
+  onRemove?: () => void;
 }
 
 export function PokemonListItem({
@@ -15,6 +18,8 @@ export function PokemonListItem({
   isCaught,
   onToggle,
   showCatchButton = true,
+  showRemoveButton = false,
+  onRemove,
 }: PokemonListItemProps) {
   return (
     <Card className="flex items-center gap-4 p-4">
@@ -38,6 +43,11 @@ export function PokemonListItem({
       </div>
       {showCatchButton && (
         <Button onClick={onToggle}>{isCaught ? "Release" : "Catch"}</Button>
+      )}
+      {showRemoveButton && onRemove && (
+        <Button onClick={onRemove} variant="secondary">
+          Release
+        </Button>
       )}
     </Card>
   );

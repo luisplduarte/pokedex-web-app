@@ -15,6 +15,7 @@ const LIST_LIMIT = 151;
 export default function PokedexPage() {
   const { data: allPokemon = [], isLoading, error } = usePokemonList(LIST_LIMIT);
   const caughtIds = usePokedexStore((s) => s.caughtIds);
+  const removeCaught = usePokedexStore((s) => s.removeCaught);
 
   const caughtPokemon = useMemo(
     () => allPokemon.filter((p) => caughtIds.has(p.id)),
@@ -64,6 +65,8 @@ export default function PokedexPage() {
           caughtIds={caughtIds}
           onToggleCaught={() => {}}
           showCatchButton={false}
+          showRemoveButton
+          onRemove={removeCaught}
         />
       )}
     </MainLayout>
