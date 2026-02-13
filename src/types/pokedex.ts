@@ -7,4 +7,5 @@ export interface CaughtEntry {
 /** Shape of the JSON persisted under the storage key */
 export interface PokedexPersistedState {
   caught: CaughtEntry[];
+  notes?: Record<string, string>;
 }
