@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/layouts/PageHeader";
 import { Spinner } from "@/components/ui/Spinner";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { PokemonDetail, usePokemonDetail } from "@/features/pokemon";
+import { usePokedexStore } from "@/store/pokedexStore";
 
 export default function PokemonDetailPage() {
   const params = useParams();
@@ -17,6 +18,9 @@ export default function PokemonDetailPage() {
       : null;
 
   const { data: pokemon, isLoading, error } = usePokemonDetail(id);
+  const { caughtIds, caughtAt, addCaught, removeCaught } = usePokedexStore();
+  const isCaught = id !== null && caughtIds.has(id);
+  const caughtAtDate = id != null ? caughtAt[id] : undefined;
 
   return (
     <MainLayout>
@@ -41,7 +45,15 @@ export default function PokemonDetailPage() {
           }
         />
       )}
-      {!isLoading && !error && pokemon && <PokemonDetail pokemon={pokemon} />}
+      {!isLoading && !error && pokemon && (
+        <PokemonDetail
+          pokemon={pokemon}
+          isCaught={isCaught}
+          caughtAt={caughtAtDate}
+          onCatch={id != null ? () => addCaught(id) : undefined}
+          onRelease={id != null ? () => removeCaught(id) : undefined}
+        />
+      )}
       {!isLoading && !error && !pokemon && id == null && (
         <ErrorMessage message="Invalid Pokémon ID" />
       )}

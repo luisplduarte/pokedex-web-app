@@ -1,8 +1,14 @@
 import type { PokemonDetail } from "@/types/pokemon";
 import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 
 interface PokemonDetailProps {
   pokemon: PokemonDetail;
+  /** When true, show "Caught at {date}" and allow release. */
+  isCaught?: boolean;
+  caughtAt?: string;
+  onCatch?: () => void;
+  onRelease?: () => void;
 }
 
 const heightInM = (dm: number) => dm / 10;
@@ -17,7 +23,24 @@ const STAT_LABELS: Record<keyof PokemonDetail["stats"], string> = {
   speed: "Speed",
 };
 
-export function PokemonDetail({ pokemon }: PokemonDetailProps) {
+function formatCaughtAt(iso: string): string {
+  try {
+    return new Date(iso).toLocaleString(undefined, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+  } catch {
+    return iso;
+  }
+}
+
+export function PokemonDetail({
+  pokemon,
+  isCaught = false,
+  caughtAt,
+  onCatch,
+  onRelease,
+}: PokemonDetailProps) {
   const statsEntries = Object.entries(pokemon.stats) as [
     keyof PokemonDetail["stats"],
     number
@@ -69,7 +92,28 @@ export function PokemonDetail({ pokemon }: PokemonDetailProps) {
                 {weightInKg(pokemon.weight)} kg
               </dd>
             </div>
+            {isCaught && caughtAt && (
+              <div>
+                <dt className="inline font-medium text-zinc-500 dark:text-zinc-400">
+                  Caught at:{" "}
+                </dt>
+                <dd className="inline text-zinc-900 dark:text-zinc-100">
+                  {formatCaughtAt(caughtAt)}
+                </dd>
+              </div>
+            )}
           </dl>
+          {(onCatch || onRelease) && (
+            <div className="mt-4">
+              <Button
+                onClick={() =>
+                  isCaught ? onRelease?.() : onCatch?.()
+                }
+              >
+                {isCaught ? "Release" : "Catch"}
+              </Button>
+            </div>
+          )}
         </div>
       </Card>
 
