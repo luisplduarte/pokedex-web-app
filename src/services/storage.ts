@@ -5,6 +5,8 @@ function isPersistedState(value: unknown): value is PokedexPersistedState {
   if (value == null || typeof value !== "object") return false;
   const o = value as Record<string, unknown>;
   if (!Array.isArray(o.caught)) return false;
+  if (o.notes !== undefined && (o.notes == null || typeof o.notes !== "object"))
+    return false;
   return o.caught.every(
     (c: unknown) =>
       c != null &&
