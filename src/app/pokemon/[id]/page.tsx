@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { MainLayout } from "@/components/layouts/MainLayout";
 import { PageHeader } from "@/components/layouts/PageHeader";
 import { Spinner } from "@/components/ui/Spinner";
@@ -12,6 +11,7 @@ import { usePokedexStore } from "@/store/pokedexStore";
 
 export default function PokemonDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const idParam = params?.id;
   const id =
     typeof idParam === "string" && /^\d+$/.test(idParam)
@@ -26,12 +26,19 @@ export default function PokemonDetailPage() {
   return (
     <MainLayout>
       <PageHeader title={pokemon ? pokemon.name : "Pokémon"}>
-        <Link
-          href="/"
-          className="inline-block text-sm text-blue-600 hover:underline dark:text-blue-400"
+        <button
+          type="button"
+          onClick={() => {
+            if (typeof window !== "undefined" && window.history.length > 1) {
+              router.back();
+            } else {
+              router.push("/");
+            }
+          }}
+          className="inline-block text-left text-sm text-blue-600 hover:underline dark:text-blue-400"
         >
           ← Back to list
-        </Link>
+        </button>
       </PageHeader>
       {isLoading && (
         <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
