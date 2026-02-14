@@ -12,6 +12,7 @@ import {
   PokedexTable,
   PokedexCardGrid,
   PokedexViewToggle,
+  PokedexProgress,
   usePokedexViewMode,
   type PokedexTableRow,
 } from "@/features/pokedex";
@@ -66,9 +67,7 @@ export default function PokedexPage() {
   return (
     <MainLayout>
       <PageHeader title="My Pokédex">
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          {caughtIds.size} caught
-        </p>
+        <PokedexProgress />
         <Link
           href="/"
           className="mt-2 inline-block text-sm text-blue-600 hover:underline dark:text-blue-400"

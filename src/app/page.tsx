@@ -25,7 +25,6 @@ export default function Home() {
   const caughtAt = usePokedexStore((s) => s.caughtAt);
   const addCaught = usePokedexStore((s) => s.addCaught);
   const removeCaught = usePokedexStore((s) => s.removeCaught);
-  const caughtCount = caughtIds.size;
 
   const filters = useFilters();
   const { nameQuery, selectedTypes, sortKey, sortDir } = filters;
@@ -48,9 +47,6 @@ export default function Home() {
   return (
     <MainLayout>
       <PageHeader title="Pokémon">
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          Test caught count: {caughtCount}
-        </p>
         <Link
           href="/pokedex"
           className="mt-2 inline-block text-sm text-blue-600 hover:underline dark:text-blue-400"
