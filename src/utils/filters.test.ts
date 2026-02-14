@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest";
 import {
   filterByName,
   filterByType,
-  filterByHeightRange,
   sortBy,
   type FilterSortItem,
 } from "./filters";
@@ -13,11 +12,11 @@ const baseItem: FilterSortItem = {
 };
 
 const list: FilterSortItem[] = [
-  { ...baseItem, name: "bulbasaur", types: ["grass", "poison"], height: 7 },
-  { ...baseItem, name: "ivysaur", types: ["grass", "poison"], height: 10 },
-  { ...baseItem, name: "charizard", types: ["fire", "flying"], height: 17 },
-  { ...baseItem, name: "pikachu", types: ["electric"], height: 4 },
-  { ...baseItem, name: "charmander", types: ["fire"], height: 6 },
+  { ...baseItem, id: 1, name: "bulbasaur", types: ["grass", "poison"] },
+  { ...baseItem, id: 2, name: "ivysaur", types: ["grass", "poison"] },
+  { ...baseItem, id: 3, name: "charizard", types: ["fire", "flying"] },
+  { ...baseItem, id: 4, name: "pikachu", types: ["electric"] },
+  { ...baseItem, id: 5, name: "charmander", types: ["fire"] },
 ];
 
 describe("filterByName", () => {
@@ -79,45 +78,6 @@ describe("filterByType", () => {
   });
 });
 
-describe("filterByHeightRange", () => {
-  it("returns full list when min and max are omitted", () => {
-    expect(filterByHeightRange(list)).toEqual(list);
-  });
-
-  it("returns empty array when list is empty", () => {
-    expect(filterByHeightRange([], 1, 10)).toEqual([]);
-  });
-
-  it("filters by min only", () => {
-    const result = filterByHeightRange(list, 7);
-    expect(result.map((x) => x.name)).toEqual(["bulbasaur", "ivysaur", "charizard"]);
-  });
-
-  it("filters by max only", () => {
-    const result = filterByHeightRange(list, undefined, 6);
-    expect(result.map((x) => x.name)).toEqual(["pikachu", "charmander"]);
-  });
-
-  it("filters by min and max (inclusive)", () => {
-    const result = filterByHeightRange(list, 6, 10);
-    expect(result.map((x) => x.name)).toEqual(["bulbasaur", "ivysaur", "charmander"]);
-  });
-
-  it("treats missing height as 0", () => {
-    const withMissing = [
-      ...list,
-      { ...baseItem, name: "unknown", types: ["normal"] },
-    ];
-    const result = filterByHeightRange(withMissing, undefined, 3);
-    expect(result.map((x) => x.name)).toContain("unknown");
-  });
-
-  it("invalid range (min > max) returns no items when both applied", () => {
-    const result = filterByHeightRange(list, 20, 1);
-    expect(result).toEqual([]);
-  });
-});
-
 describe("sortBy", () => {
   it("returns copy; does not mutate original", () => {
     const copy = sortBy(list, "name", "asc");
@@ -147,27 +107,26 @@ describe("sortBy", () => {
     ]);
   });
 
-  it("sorts by height asc", () => {
-    const result = sortBy(list, "height", "asc");
+  it("sorts by id asc", () => {
+    const result = sortBy(list, "id", "asc");
     expect(result.map((x) => x.name)).toEqual([
-      "pikachu",
-      "charmander",
       "bulbasaur",
       "ivysaur",
       "charizard",
+      "pikachu",
+      "charmander",
     ]);
   });
 
-  it("sorts by height desc", () => {
-    const result = sortBy(list, "height", "desc");
-    expect(result[0].name).toBe("charizard");
-    expect(result[result.length - 1].name).toBe("pikachu");
-  });
-
-  it("sorts by type (first type) asc", () => {
-    const result = sortBy(list, "type", "asc");
-    const firstTypes = result.map((x) => x.types[0]);
-    expect(firstTypes).toEqual([...firstTypes].sort());
+  it("sorts by id desc", () => {
+    const result = sortBy(list, "id", "desc");
+    expect(result.map((x) => x.name)).toEqual([
+      "charmander",
+      "pikachu",
+      "charizard",
+      "ivysaur",
+      "bulbasaur",
+    ]);
   });
 
   it("sorts by caughtAt asc", () => {

@@ -1,12 +1,12 @@
 /** Item shape required for filter/sort utils (matches Pokemon and extended caught list) */
 export interface FilterSortItem {
+  id?: number;
   name: string;
   types: string[];
-  height?: number;
   caughtAt?: string;
 }
 
-export type SortKey = "name" | "height" | "type" | "caughtAt";
+export type SortKey = "id" | "name" | "caughtAt";
 export type SortDir = "asc" | "desc";
 
 export function filterByName<T extends { name: string }>(
@@ -33,24 +33,8 @@ export function filterByType<T extends { types: string[] }>(
 }
 
 /**
- * Filter list by height range (inclusive). Omit min/max to skip that bound.
- */
-export function filterByHeightRange<T extends { height?: number }>(
-  list: T[],
-  min?: number,
-  max?: number
-): T[] {
-  return list.filter((item) => {
-    const h = item.height ?? 0;
-    if (min != null && h < min) return false;
-    if (max != null && h > max) return false;
-    return true;
-  });
-}
-
-/**
- * Sort list by key and direction. Keys: name, height, type (first type), caughtAt (timestamp).
- * Missing height/caughtAt are treated as 0 for ordering.
+ * Sort list by key and direction. Keys: id, name, caughtAt (timestamp).
+ * Missing id/caughtAt are treated as 0 for ordering.
  */
 export function sortBy<T extends FilterSortItem>(
   list: T[],
@@ -62,17 +46,10 @@ export function sortBy<T extends FilterSortItem>(
 
   sorted.sort((a, b) => {
     switch (key) {
+      case "id":
+        return mult * ((a.id ?? 0) - (b.id ?? 0));
       case "name":
         return mult * a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
-      case "height":
-        return mult * ((a.height ?? 0) - (b.height ?? 0));
-      case "type":
-        return (
-          mult *
-          (a.types[0] ?? "").localeCompare(b.types[0] ?? "", undefined, {
-            sensitivity: "base",
-          })
-        );
       case "caughtAt": {
         const aTime = a.caughtAt ? new Date(a.caughtAt).getTime() : 0;
         const bTime = b.caughtAt ? new Date(b.caughtAt).getTime() : 0;
