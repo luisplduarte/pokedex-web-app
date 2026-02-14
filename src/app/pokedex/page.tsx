@@ -8,7 +8,13 @@ import { MainLayout } from "@/components/layouts/MainLayout";
 import { PageHeader } from "@/components/layouts/PageHeader";
 import { Spinner } from "@/components/ui/Spinner";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
-import { PokemonList } from "@/features/pokemon";
+import {
+  PokedexTable,
+  PokedexCardGrid,
+  PokedexViewToggle,
+  usePokedexViewMode,
+  type PokedexTableRow,
+} from "@/features/pokedex";
 import { FilterBar, useFilters } from "@/features/filters";
 import {
   filterByName,
@@ -25,25 +31,35 @@ export default function PokedexPage() {
   const { data: allPokemon = [], isLoading, error } = usePokemonList(LIST_LIMIT);
   const caughtIds = usePokedexStore((s) => s.caughtIds);
   const caughtAt = usePokedexStore((s) => s.caughtAt);
+  const getNote = usePokedexStore((s) => s.getNote);
   const removeCaught = usePokedexStore((s) => s.removeCaught);
 
   const filters = useFilters();
   const { nameQuery, selectedTypes, sortKey, sortDir } = filters;
+  const { viewMode, setViewMode } = usePokedexViewMode();
 
   const caughtPokemon = useMemo(
     () => allPokemon.filter((p) => caughtIds.has(p.id)),
     [allPokemon, caughtIds]
   );
 
-  const filteredAndSorted = useMemo((): Pokemon[] => {
+  const tableRows = useMemo((): PokedexTableRow[] => {
     const withCaughtAt: ListItem[] = caughtPokemon.map((p) => ({
       ...p,
       caughtAt: caughtAt[p.id],
     }));
     const byName = filterByName(withCaughtAt, nameQuery);
     const byType = filterByType(byName, selectedTypes);
-    return sortBy(byType, sortKey, sortDir);
-  }, [caughtPokemon, caughtAt, nameQuery, selectedTypes, sortKey, sortDir]);
+    const sorted = sortBy(byType, sortKey, sortDir);
+    return sorted.map((p) => ({
+      id: p.id,
+      name: p.name,
+      imageUrl: p.imageUrl,
+      types: p.types,
+      caughtAt: caughtAt[p.id],
+      note: getNote(p.id),
+    }));
+  }, [caughtPokemon, caughtAt, getNote, nameQuery, selectedTypes, sortKey, sortDir]);
 
   const noCaught = caughtIds.size === 0;
 
@@ -84,15 +100,15 @@ export default function PokedexPage() {
       )}
       {!isLoading && !error && !noCaught && caughtPokemon.length > 0 && (
         <>
-          <FilterBar {...filters} />
-          <PokemonList
-            pokemon={filteredAndSorted}
-            caughtIds={caughtIds}
-            onToggleCaught={() => {}}
-            showCatchButton={false}
-            showRemoveButton
-            onRemove={removeCaught}
-          />
+          <div className="flex flex-wrap items-center gap-4">
+            <FilterBar {...filters} />
+            <PokedexViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+          </div>
+          {viewMode === "table" ? (
+            <PokedexTable data={tableRows} onRemove={removeCaught} />
+          ) : (
+            <PokedexCardGrid data={tableRows} onRemove={removeCaught} />
+          )}
         </>
       )}
     </MainLayout>
