@@ -9,18 +9,41 @@ import { PageHeader } from "@/components/layouts/PageHeader";
 import { Spinner } from "@/components/ui/Spinner";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { PokemonList } from "@/features/pokemon";
+import { FilterBar, useFilters } from "@/features/filters";
+import {
+  filterByName,
+  filterByType,
+  sortBy,
+} from "@/utils/filters";
+import type { Pokemon } from "@/types/pokemon";
+
+type ListItem = Pokemon & { caughtAt?: string };
 
 const LIST_LIMIT = 151;
 
 export default function PokedexPage() {
   const { data: allPokemon = [], isLoading, error } = usePokemonList(LIST_LIMIT);
   const caughtIds = usePokedexStore((s) => s.caughtIds);
+  const caughtAt = usePokedexStore((s) => s.caughtAt);
   const removeCaught = usePokedexStore((s) => s.removeCaught);
+
+  const filters = useFilters();
+  const { nameQuery, selectedTypes, sortKey, sortDir } = filters;
 
   const caughtPokemon = useMemo(
     () => allPokemon.filter((p) => caughtIds.has(p.id)),
     [allPokemon, caughtIds]
   );
+
+  const filteredAndSorted = useMemo((): Pokemon[] => {
+    const withCaughtAt: ListItem[] = caughtPokemon.map((p) => ({
+      ...p,
+      caughtAt: caughtAt[p.id],
+    }));
+    const byName = filterByName(withCaughtAt, nameQuery);
+    const byType = filterByType(byName, selectedTypes);
+    return sortBy(byType, sortKey, sortDir);
+  }, [caughtPokemon, caughtAt, nameQuery, selectedTypes, sortKey, sortDir]);
 
   const noCaught = caughtIds.size === 0;
 
@@ -60,14 +83,17 @@ export default function PokedexPage() {
         </p>
       )}
       {!isLoading && !error && !noCaught && caughtPokemon.length > 0 && (
-        <PokemonList
-          pokemon={caughtPokemon}
-          caughtIds={caughtIds}
-          onToggleCaught={() => {}}
-          showCatchButton={false}
-          showRemoveButton
-          onRemove={removeCaught}
-        />
+        <>
+          <FilterBar {...filters} />
+          <PokemonList
+            pokemon={filteredAndSorted}
+            caughtIds={caughtIds}
+            onToggleCaught={() => {}}
+            showCatchButton={false}
+            showRemoveButton
+            onRemove={removeCaught}
+          />
+        </>
       )}
     </MainLayout>
   );

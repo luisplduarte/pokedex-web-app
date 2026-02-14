@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import Link from "next/link";
 import { usePokemonList } from "@/hooks/usePokemonList";
 import { usePokedexStore } from "@/store/pokedexStore";
@@ -8,13 +9,36 @@ import { PageHeader } from "@/components/layouts/PageHeader";
 import { Spinner } from "@/components/ui/Spinner";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { PokemonList } from "@/features/pokemon";
+import { FilterBar, useFilters } from "@/features/filters";
+import {
+  filterByName,
+  filterByType,
+  sortBy,
+} from "@/utils/filters";
+import type { Pokemon } from "@/types/pokemon";
+
+type ListItem = Pokemon & { caughtAt?: string };
 
 export default function Home() {
   const { data: pokemon = [], isLoading: loading, error } = usePokemonList(20);
   const caughtIds = usePokedexStore((s) => s.caughtIds);
+  const caughtAt = usePokedexStore((s) => s.caughtAt);
   const addCaught = usePokedexStore((s) => s.addCaught);
   const removeCaught = usePokedexStore((s) => s.removeCaught);
   const caughtCount = caughtIds.size;
+
+  const filters = useFilters();
+  const { nameQuery, selectedTypes, sortKey, sortDir } = filters;
+
+  const filteredAndSorted = useMemo((): Pokemon[] => {
+    const withCaughtAt: ListItem[] = pokemon.map((p) => ({
+      ...p,
+      caughtAt: caughtAt[p.id],
+    }));
+    const byName = filterByName(withCaughtAt, nameQuery);
+    const byType = filterByType(byName, selectedTypes);
+    return sortBy(byType, sortKey, sortDir);
+  }, [pokemon, caughtAt, nameQuery, selectedTypes, sortKey, sortDir]);
 
   const toggleCaught = (id: number, isCaught: boolean) => {
     if (isCaught) removeCaught(id);
@@ -48,11 +72,14 @@ export default function Home() {
         />
       )}
       {!loading && !error && pokemon.length > 0 && (
-        <PokemonList
-          pokemon={pokemon}
-          caughtIds={caughtIds}
-          onToggleCaught={toggleCaught}
-        />
+        <>
+          <FilterBar {...filters} />
+          <PokemonList
+            pokemon={filteredAndSorted}
+            caughtIds={caughtIds}
+            onToggleCaught={toggleCaught}
+          />
+        </>
       )}
     </MainLayout>
   );
