@@ -8,7 +8,13 @@ import { MainLayout } from "@/components/layouts/MainLayout";
 import { PageHeader } from "@/components/layouts/PageHeader";
 import { Spinner } from "@/components/ui/Spinner";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
-import { PokedexTable, type PokedexTableRow } from "@/features/pokedex";
+import {
+  PokedexTable,
+  PokedexCardGrid,
+  PokedexViewToggle,
+  usePokedexViewMode,
+  type PokedexTableRow,
+} from "@/features/pokedex";
 import { FilterBar, useFilters } from "@/features/filters";
 import {
   filterByName,
@@ -30,6 +36,7 @@ export default function PokedexPage() {
 
   const filters = useFilters();
   const { nameQuery, selectedTypes, sortKey, sortDir } = filters;
+  const { viewMode, setViewMode } = usePokedexViewMode();
 
   const caughtPokemon = useMemo(
     () => allPokemon.filter((p) => caughtIds.has(p.id)),
@@ -93,8 +100,15 @@ export default function PokedexPage() {
       )}
       {!isLoading && !error && !noCaught && caughtPokemon.length > 0 && (
         <>
-          <FilterBar {...filters} />
-          <PokedexTable data={tableRows} onRemove={removeCaught} />
+          <div className="flex flex-wrap items-center gap-4">
+            <FilterBar {...filters} />
+            <PokedexViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+          </div>
+          {viewMode === "table" ? (
+            <PokedexTable data={tableRows} onRemove={removeCaught} />
+          ) : (
+            <PokedexCardGrid data={tableRows} onRemove={removeCaught} />
+          )}
         </>
       )}
     </MainLayout>
