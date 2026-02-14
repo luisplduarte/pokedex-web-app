@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import Link from "next/link";
 import { usePokemonList } from "@/hooks/usePokemonList";
 import { usePokedexStore } from "@/store/pokedexStore";
@@ -8,6 +8,7 @@ import { MainLayout } from "@/components/layouts/MainLayout";
 import { PageHeader } from "@/components/layouts/PageHeader";
 import { Spinner } from "@/components/ui/Spinner";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
+import { Button } from "@/components/ui/Button";
 import {
   PokedexTable,
   PokedexCardGrid,
@@ -22,6 +23,8 @@ import {
   filterByType,
   sortBy,
 } from "@/utils/filters";
+import { buildCsv, type CsvExportRow } from "@/utils/csvExport";
+import { downloadCsv } from "@/utils/downloadCsv";
 import type { Pokemon } from "@/types/pokemon";
 
 type ListItem = Pokemon & { caughtAt?: string };
@@ -64,10 +67,34 @@ export default function PokedexPage() {
 
   const noCaught = caughtIds.size === 0;
 
+  const handleExportCsv = useCallback(() => {
+    const caught = allPokemon.filter((p) => caughtIds.has(p.id));
+    const rows: CsvExportRow[] = caught.map((p) => ({
+      id: p.id,
+      name: p.name,
+      types: p.types,
+      caughtAt: caughtAt[p.id],
+      note: getNote(p.id),
+    }));
+    const csv = buildCsv(rows);
+    const date = new Date().toISOString().slice(0, 10);
+    downloadCsv(csv, `pokedex-${date}.csv`);
+  }, [allPokemon, caughtIds, caughtAt, getNote]);
+
   return (
     <MainLayout>
       <PageHeader title="My Pokédex">
-        <PokedexProgress />
+        <div className="flex flex-wrap items-center gap-3">
+          <PokedexProgress />
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleExportCsv}
+            aria-label="Export Pokédex as CSV"
+          >
+            Export CSV
+          </Button>
+        </div>
         <Link
           href="/"
           className="mt-2 inline-block text-sm text-blue-600 hover:underline dark:text-blue-400"
