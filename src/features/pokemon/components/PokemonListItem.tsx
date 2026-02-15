@@ -51,7 +51,11 @@ export function PokemonListItem({
         <Button onClick={onToggle}>{isCaught ? "Release" : "Catch"}</Button>
       )}
       {showRemoveButton && onRemove && (
-        <Button onClick={onRemove} variant="secondary">
+        <Button
+          onClick={onRemove}
+          variant="secondary"
+          aria-label={`Release ${pokemon.name}`}
+        >
           Release
         </Button>
       )}

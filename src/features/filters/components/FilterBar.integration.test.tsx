@@ -71,7 +71,7 @@ describe("FilterBar integration", () => {
 
     expect(screen.getByTestId("result-count")).toHaveTextContent("4");
 
-    fireEvent.click(screen.getByRole("button", { name: "fire" }));
+    fireEvent.click(screen.getByRole("button", { name: /filter by fire/i }));
 
     expect(screen.getByTestId("result-count")).toHaveTextContent("2");
     expect(screen.getByTestId("result-names").textContent).toContain("charizard");

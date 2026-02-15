@@ -86,10 +86,10 @@ export function FilterBar({
         />
       </div>
 
-      <div className="flex flex-col gap-2">
-        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Type
-        </span>
+      <fieldset className="flex flex-col gap-2 border-0 p-0">
+        <legend className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          Filter by type
+        </legend>
         <div className="flex flex-wrap gap-1.5">
           {POKEMON_TYPES.map((type) => {
             const selected = selectedTypes.includes(type);
@@ -100,13 +100,14 @@ export function FilterBar({
                 onClick={() => toggleType(type)}
                 className={`${chipBase} ${selected ? chipActive : chipInactive}`}
                 aria-pressed={selected}
+                aria-label={selected ? `Remove ${type} filter` : `Filter by ${type}`}
               >
                 {type}
               </button>
             );
           })}
         </div>
-      </div>
+      </fieldset>
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
         <div className="flex items-center gap-2">

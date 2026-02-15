@@ -109,6 +109,7 @@ export function PokemonDetail({
                 onClick={() =>
                   isCaught ? onRelease?.() : onCatch?.()
                 }
+                aria-label={isCaught ? `Release ${pokemon.name}` : `Catch ${pokemon.name}`}
               >
                 {isCaught ? "Release" : "Catch"}
               </Button>
