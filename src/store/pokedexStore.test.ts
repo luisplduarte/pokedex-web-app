@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import * as storage from "@/services/storage";
 import { usePokedexStore } from "./pokedexStore";
 
@@ -59,5 +59,57 @@ describe("pokedexStore notes", () => {
 
     expect(usePokedexStore.getState().getNote(1)).toBe("restored note");
     expect(usePokedexStore.getState().getNote(2)).toBe("another");
+  });
+});
+
+describe("pokedexStore when offline", () => {
+  const originalOnLine = Object.getOwnPropertyDescriptor(
+    navigator,
+    "onLine"
+  ) as PropertyDescriptor | undefined;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    resetStore();
+    Object.defineProperty(navigator, "onLine", {
+      value: false,
+      configurable: true,
+      writable: true,
+    });
+  });
+
+  afterEach(() => {
+    if (originalOnLine) {
+      Object.defineProperty(navigator, "onLine", originalOnLine);
+    }
+  });
+
+  it("addCaught, setNote, and removeCaught update store and persist via storage when offline", () => {
+    usePokedexStore.getState().addCaught(1);
+    expect(usePokedexStore.getState().caughtIds.has(1)).toBe(true);
+    expect(storage.save).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        caught: expect.arrayContaining([
+          expect.objectContaining({ pokemonId: 1, caughtAt: expect.any(String) }),
+        ]),
+      })
+    );
+
+    usePokedexStore.getState().setNote(1, "offline note");
+    expect(usePokedexStore.getState().getNote(1)).toBe("offline note");
+    expect(storage.save).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        notes: { "1": "offline note" },
+      })
+    );
+
+    usePokedexStore.getState().removeCaught(1);
+    expect(usePokedexStore.getState().caughtIds.has(1)).toBe(false);
+    expect(usePokedexStore.getState().getNote(1)).toBe("");
+    expect(storage.save).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        caught: [],
+      })
+    );
   });
 });

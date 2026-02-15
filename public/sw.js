@@ -21,11 +21,15 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Only same-origin GET for app routes (navigation and RSC payload fetches)
+  // Same-origin GET only. Cache app routes and Next.js static assets (chunks, CSS).
   if (request.method !== "GET") return;
   if (url.origin !== self.location.origin) return;
   const path = url.pathname;
-  if (path.startsWith("/_next") || path.startsWith("/api")) return;
+  if (path.startsWith("/api")) return;
+  // Allow app routes (/, /pokemon/1, etc.) and static assets so chunks load offline
+  const isAppRoute = !path.startsWith("/_next");
+  const isStaticAsset = path.startsWith("/_next/static/");
+  if (!isAppRoute && !isStaticAsset) return;
 
   event.respondWith(
     (async () => {
