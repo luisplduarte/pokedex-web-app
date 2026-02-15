@@ -7,6 +7,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { PokemonDetail, usePokemonDetail } from "@/features/pokemon";
 import { PokemonNote } from "@/features/notes";
+import { SharePokemonButton } from "@/features/sharing";
 import { usePokedexStore } from "@/store/pokedexStore";
 
 export default function PokemonDetailPage() {
@@ -19,26 +20,35 @@ export default function PokemonDetailPage() {
       : null;
 
   const { data: pokemon, isLoading, error } = usePokemonDetail(id);
-  const { caughtIds, caughtAt, addCaught, removeCaught } = usePokedexStore();
+  const { caughtIds, caughtAt, addCaught, removeCaught, getNote } =
+    usePokedexStore();
   const isCaught = id !== null && caughtIds.has(id);
   const caughtAtDate = id != null ? caughtAt[id] : undefined;
 
   return (
     <MainLayout>
       <PageHeader title={pokemon ? pokemon.name : "Pokémon"}>
-        <button
-          type="button"
-          onClick={() => {
-            if (typeof window !== "undefined" && window.history.length > 1) {
-              router.back();
-            } else {
-              router.push("/");
-            }
-          }}
-          className="inline-block text-left text-sm text-blue-600 hover:underline dark:text-blue-400"
-        >
-          ← Back to list
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== "undefined" && window.history.length > 1) {
+                router.back();
+              } else {
+                router.push("/");
+              }
+            }}
+            className="inline-block text-left text-sm text-blue-600 hover:underline dark:text-blue-400"
+          >
+            ← Back to list
+          </button>
+          {pokemon && (
+            <SharePokemonButton
+              pokemon={pokemon}
+              note={id != null ? getNote(id) : undefined}
+            />
+          )}
+        </div>
       </PageHeader>
       {isLoading && (
         <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
