@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { OfflineIndicator } from "@/components/ui/OfflineIndicator";
 import { PokedexHydrate } from "@/components/providers/PokedexHydrate";
 import { QueryProvider } from "@/components/providers/QueryProvider";
+import { ServiceWorkerRegister } from "@/components/providers/ServiceWorkerRegister";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,6 +31,8 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <OfflineIndicator />
+        <ServiceWorkerRegister />
         <QueryProvider>
           <PokedexHydrate />
           {children}

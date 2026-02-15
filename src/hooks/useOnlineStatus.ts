@@ -1,0 +1,31 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+/**
+ * Returns whether the app has network connectivity.
+ * Uses navigator.onLine and listens to window "online" / "offline" events.
+ * Defaults to true for SSR so the offline banner does not flash on first paint.
+ */
+export function useOnlineStatus(): boolean {
+  const [isOnline, setIsOnline] = useState(true);
+
+  useEffect(() => {
+    if (typeof navigator === "undefined") return;
+
+    setIsOnline(navigator.onLine);
+
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
+  return isOnline;
+}
