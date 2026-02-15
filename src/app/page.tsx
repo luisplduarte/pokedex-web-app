@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { Suspense, useMemo } from "react";
 import Link from "next/link";
 import { usePokemonList } from "@/hooks/usePokemonList";
 import { usePokedexStore } from "@/store/pokedexStore";
@@ -19,7 +19,7 @@ import type { Pokemon } from "@/types/pokemon";
 
 type ListItem = Pokemon & { caughtAt?: string };
 
-export default function Home() {
+function HomeContent() {
   const { data: pokemon = [], isLoading: loading, error } = usePokemonList(20);
   const caughtIds = usePokedexStore((s) => s.caughtIds);
   const caughtAt = usePokedexStore((s) => s.caughtAt);
@@ -81,5 +81,30 @@ export default function Home() {
         </>
       )}
     </MainLayout>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense
+      fallback={
+        <MainLayout>
+          <PageHeader title="Pokémon">
+            <Link
+              href="/pokedex"
+              className="mt-2 inline-block text-sm text-blue-600 hover:underline dark:text-blue-400"
+            >
+              My Pokédex →
+            </Link>
+          </PageHeader>
+          <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
+            <Spinner />
+            <span>Loading…</span>
+          </div>
+        </MainLayout>
+      }
+    >
+      <HomeContent />
+    </Suspense>
   );
 }

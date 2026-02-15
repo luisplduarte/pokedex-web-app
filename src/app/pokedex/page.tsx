@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { Suspense, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { usePokemonList } from "@/hooks/usePokemonList";
 import { usePokedexStore } from "@/store/pokedexStore";
@@ -31,7 +31,7 @@ type ListItem = Pokemon & { caughtAt?: string };
 
 const LIST_LIMIT = 151;
 
-export default function PokedexPage() {
+function PokedexContent() {
   const { data: allPokemon = [], isLoading, error } = usePokemonList(LIST_LIMIT);
   const caughtIds = usePokedexStore((s) => s.caughtIds);
   const caughtAt = usePokedexStore((s) => s.caughtAt);
@@ -138,5 +138,33 @@ export default function PokedexPage() {
         </>
       )}
     </MainLayout>
+  );
+}
+
+export default function PokedexPage() {
+  return (
+    <Suspense
+      fallback={
+        <MainLayout>
+          <PageHeader title="My Pokédex">
+            <div className="flex flex-wrap items-center gap-3">
+              <PokedexProgress />
+            </div>
+            <Link
+              href="/"
+              className="mt-2 inline-block text-sm text-blue-600 hover:underline dark:text-blue-400"
+            >
+              ← Back to all Pokémon
+            </Link>
+          </PageHeader>
+          <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
+            <Spinner />
+            <span>Loading…</span>
+          </div>
+        </MainLayout>
+      }
+    >
+      <PokedexContent />
+    </Suspense>
   );
 }

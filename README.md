@@ -27,6 +27,11 @@ Tests use [Vitest](https://vitest.dev/) with [Testing Library](https://testing-l
 - **Run tests (watch):** `npm test`
 - **Run once:** `npm run test:run`
 
+## Build and deploy
+
+- **Build:** `npm run build`. No environment variables are required. The app uses [PokéAPI](https://pokeapi.co/) with a fixed base URL in `src/lib/constants.ts`; share links use the current origin at runtime.
+- **Deploy:** Standard Next.js deploy (e.g. Vercel). No `.env` or env vars needed for the default setup.
+
 ## Data fetching
 
 List and detail data come from [PokéAPI](https://pokeapi.co/) via React Query. Defaults: `staleTime` 5 minutes, `retry: 1` on failure. Loading and error states use the shared `Spinner` and `ErrorMessage` components on all data pages.
