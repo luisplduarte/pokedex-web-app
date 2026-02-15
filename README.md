@@ -27,6 +27,10 @@ Tests use [Vitest](https://vitest.dev/) with [Testing Library](https://testing-l
 - **Run tests (watch):** `npm test`
 - **Run once:** `npm run test:run`
 
+## Data fetching
+
+List and detail data come from [PokéAPI](https://pokeapi.co/) via React Query. Defaults: `staleTime` 5 minutes, `retry: 1` on failure. Loading and error states use the shared `Spinner` and `ErrorMessage` components on all data pages.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

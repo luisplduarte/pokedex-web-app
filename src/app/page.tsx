@@ -67,6 +67,9 @@ export default function Home() {
           }
         />
       )}
+      {!loading && !error && pokemon.length === 0 && (
+        <p className="text-zinc-600 dark:text-zinc-400">No Pokémon found.</p>
+      )}
       {!loading && !error && pokemon.length > 0 && (
         <>
           <FilterBar {...filters} />
