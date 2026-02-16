@@ -2,6 +2,8 @@
 
 A frontend-only Pokédex: browse Pokémon from [PokéAPI](https://pokeapi.co/), catch and release them, add notes, filter/sort, export to CSV, and share links. State is persisted in `localStorage`; the app works offline for previously loaded data and for catch/remove/notes.
 
+**Live demo:** [https://pokedex-web-app-bice.vercel.app/](https://pokedex-web-app-bice.vercel.app/)
+
 ## Tech Stack
 
 | Area | Technology |
@@ -65,7 +67,7 @@ List and detail come from PokéAPI via React Query. Defaults: `staleTime` 5 minu
 ## Build and Deploy
 
 - **Build:** `npm run build`. No environment variables required; PokéAPI base URL is in `src/lib/constants.ts`; share links use the current origin at runtime.
-- **Deploy:** Standard Next.js deploy (e.g. [Vercel](https://vercel.com)). No `.env` needed for the default setup.
+- **Deploy:** The app is deployed on [Vercel](https://vercel.com) at [https://pokedex-web-app-bice.vercel.app/](https://pokedex-web-app-bice.vercel.app/). No `.env` needed for the default setup.
 
 ## Documentation
 
