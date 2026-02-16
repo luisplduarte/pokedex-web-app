@@ -2,10 +2,11 @@
 
 import { Suspense, useMemo } from "react";
 import Link from "next/link";
-import { usePokemonList } from "@/hooks/usePokemonList";
+import { usePokemonListInfinite } from "@/hooks/usePokemonList";
 import { usePokedexStore } from "@/store/pokedexStore";
 import { MainLayout } from "@/components/layouts/MainLayout";
 import { PageHeader } from "@/components/layouts/PageHeader";
+import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { PokemonList } from "@/features/pokemon";
@@ -20,7 +21,14 @@ import type { Pokemon } from "@/types/pokemon";
 type ListItem = Pokemon & { caughtAt?: string };
 
 function HomeContent() {
-  const { data: pokemon = [], isLoading: loading, error } = usePokemonList(20);
+  const {
+    pokemon,
+    isLoading: loading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = usePokemonListInfinite();
   const caughtIds = usePokedexStore((s) => s.caughtIds);
   const caughtAt = usePokedexStore((s) => s.caughtAt);
   const addCaught = usePokedexStore((s) => s.addCaught);
@@ -78,6 +86,26 @@ function HomeContent() {
             caughtIds={caughtIds}
             onToggleCaught={toggleCaught}
           />
+          {hasNextPage && (
+            <div className="mt-6 flex justify-center">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
+                className="flex items-center gap-2"
+              >
+                {isFetchingNextPage ? (
+                  <>
+                    <Spinner />
+                    Loading…
+                  </>
+                ) : (
+                  "Load more"
+                )}
+              </Button>
+            </div>
+          )}
         </>
       )}
     </MainLayout>

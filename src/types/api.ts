@@ -1,5 +1,6 @@
-/** PokéAPI list endpoint: GET /pokemon?limit=... */
+/** PokéAPI list endpoint: GET /pokemon?limit=...&offset=... */
 export interface PokemonListApiResponse {
+  count: number;
   results: Array<{ name: string; url: string }>;
 }
 

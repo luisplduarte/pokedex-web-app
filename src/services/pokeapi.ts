@@ -55,18 +55,33 @@ function mapDetailResponseToPokemonDetail(
 }
 
 /**
- * Fetches the Pokémon list from PokéAPI. 
+ * Fetches the Pokémon list from PokéAPI.
  * Each list entry is resolved via the detail endpoint to get imageUrl and types.
  */
 export async function fetchPokemonList(
   limit: number = 20
 ): Promise<Pokemon[]> {
-  const listRes = await fetch(`${POKEAPI_BASE_URL}/pokemon?limit=${limit}`);
+  const { results } = await fetchPokemonListPage(limit, 0);
+  return results;
+}
+
+/**
+ * Fetches one page of the Pokémon list (for pagination).
+ * Returns results and total count from the API.
+ */
+export async function fetchPokemonListPage(
+  limit: number,
+  offset: number
+): Promise<{ results: Pokemon[]; total: number }> {
+  const listRes = await fetch(
+    `${POKEAPI_BASE_URL}/pokemon?limit=${limit}&offset=${offset}`
+  );
   if (!listRes.ok) {
     throw new Error(`Failed to fetch list: ${listRes.status}`);
   }
   const listData: PokemonListApiResponse = await listRes.json();
   const ids = listData.results.map((r) => getPokemonIdFromUrl(r.url));
+  const total = listData.count ?? 0;
 
   const details = await Promise.all(
     ids.map((id) =>
@@ -77,7 +92,7 @@ export async function fetchPokemonList(
     )
   );
 
-  return details.map(mapDetailToPokemon);
+  return { results: details.map(mapDetailToPokemon), total };
 }
 
 /**

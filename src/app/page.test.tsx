@@ -24,10 +24,13 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/hooks/usePokemonList", () => ({
-  usePokemonList: () => ({
-    data: mockPokemonList,
+  usePokemonListInfinite: () => ({
+    pokemon: mockPokemonList,
     isLoading: false,
     error: null,
+    fetchNextPage: vi.fn(),
+    hasNextPage: false,
+    isFetchingNextPage: false,
   }),
 }));
 
