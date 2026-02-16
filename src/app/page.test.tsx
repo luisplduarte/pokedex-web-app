@@ -87,6 +87,11 @@ describe("Home page", () => {
     const releaseButton = screen.getByRole("button", { name: /release/i });
     fireEvent.click(releaseButton);
 
+    const confirmReleaseButton = screen.getByRole("button", {
+      name: /release/i,
+    });
+    fireEvent.click(confirmReleaseButton);
+
     expect(mockRemoveCaught).toHaveBeenCalledTimes(1);
     expect(mockRemoveCaught).toHaveBeenCalledWith(1);
   });

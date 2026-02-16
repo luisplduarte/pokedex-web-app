@@ -1,7 +1,10 @@
-"use client";
+ "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { getTypeIconUrl } from "@/features/filters/typeIcons";
 import type { PokedexTableRow } from "./PokedexTable";
 
@@ -30,6 +33,62 @@ function formatWeight(hg?: number): string {
 interface PokedexCardGridProps {
   data: PokedexTableRow[];
   onRemove: (id: number) => void;
+}
+
+interface PokedexCardRemoveProps {
+  id: number;
+  name: string;
+  onRemove: (id: number) => void;
+}
+
+function PokedexCardRemove({ id, name, onRemove }: PokedexCardRemoveProps) {
+  const [confirming, setConfirming] = useState(false);
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setConfirming(true)}
+        className="inline-flex items-center justify-center text-red-500 hover:text-red-600 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900"
+        aria-label={`Remove ${name} from Pokédex`}
+      >
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <path
+            d="M5 7h14M10 11v6M14 11v6M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M7 7h10l-.8 11.2A1 1 0 0 1 15.2 19H8.8a1 1 0 0 1-.998-.8L7 7Z"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+      <ConfirmDialog
+        open={confirming}
+        title="Release from Pokédex"
+        description={
+          <span>
+            Are you sure you want to release{" "}
+            <span className="font-semibold capitalize">{name}</span> from your
+            Pokédex?
+          </span>
+        }
+        confirmLabel="Release"
+        cancelLabel="Cancel"
+        onConfirm={() => {
+          onRemove(id);
+          setConfirming(false);
+        }}
+        onCancel={() => setConfirming(false)}
+      />
+    </>
+  );
 }
 
 export function PokedexCardGrid({ data, onRemove }: PokedexCardGridProps) {
@@ -61,29 +120,11 @@ export function PokedexCardGrid({ data, onRemove }: PokedexCardGridProps) {
                       {row.name}
                     </Link>
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => onRemove(row.id)}
-                    className="inline-flex items-center justify-center text-red-500 hover:text-red-600 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900"
-                    aria-label={`Remove ${row.name} from Pokédex`}
-                  >
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M5 7h14M10 11v6M14 11v6M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M7 7h10l-.8 11.2A1 1 0 0 1 15.2 19H8.8a1 1 0 0 1-.998-.8L7 7Z"
-                        stroke="currentColor"
-                        strokeWidth="1.6"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
+                  <PokedexCardRemove
+                    id={row.id}
+                    name={row.name}
+                    onRemove={onRemove}
+                  />
                 </div>
                 <div className="mt-1 flex flex-wrap items-center gap-1.5">
                   {row.types?.length ? (
