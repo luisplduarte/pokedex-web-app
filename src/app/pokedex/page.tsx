@@ -28,6 +28,7 @@ import {
 } from "@/utils/filters";
 import { buildCsv, type CsvExportRow } from "@/utils/csvExport";
 import { downloadCsv } from "@/utils/downloadCsv";
+import { getCachedPokemonMany } from "@/services/pokemonCache";
 import type { Pokemon } from "@/types/pokemon";
 
 type ListItem = Pokemon & { caughtAt?: string };
@@ -58,13 +59,21 @@ function PokedexContent() {
   const { viewMode, setViewMode } = usePokedexViewMode();
   const [confirmExportOpen, setConfirmExportOpen] = useState(false);
 
-  const caughtPokemon = useMemo(
+  const caughtPokemonFromApi = useMemo(
     () => allPokemon.filter((p) => caughtIds.has(p.id)),
     [allPokemon, caughtIds]
   );
 
+  const offlineCaught = useMemo(() => {
+    if (!error || caughtIds.size === 0) return [];
+    const cached = getCachedPokemonMany(Array.from(caughtIds));
+    return cached.map((p) => ({ ...p, caughtAt: caughtAt[p.id] })) as ListItem[];
+  }, [error, caughtIds, caughtAt]);
+
+  const effectiveCaughtPokemon = error ? offlineCaught : caughtPokemonFromApi;
+
   const tableRows = useMemo((): PokedexTableRow[] => {
-    const withCaughtAt: ListItem[] = caughtPokemon.map((p) => ({
+    const withCaughtAt: ListItem[] = effectiveCaughtPokemon.map((p) => ({
       ...p,
       caughtAt: caughtAt[p.id],
     }));
@@ -84,7 +93,7 @@ function PokedexContent() {
       note: getNote(p.id),
     }));
   }, [
-    caughtPokemon,
+    effectiveCaughtPokemon,
     caughtAt,
     getNote,
     nameQuery,
@@ -100,8 +109,7 @@ function PokedexContent() {
   const noCaught = caughtIds.size === 0;
 
   const handleExportCsv = useCallback(() => {
-    const caught = allPokemon.filter((p) => caughtIds.has(p.id));
-    const rows: CsvExportRow[] = caught.map((p) => ({
+    const rows: CsvExportRow[] = effectiveCaughtPokemon.map((p) => ({
       id: p.id,
       name: p.name,
       types: p.types,
@@ -113,7 +121,7 @@ function PokedexContent() {
     const csv = buildCsv(rows);
     const date = new Date().toISOString().slice(0, 10);
     downloadCsv(csv, `pokedex-${date}.csv`);
-  }, [allPokemon, caughtIds, caughtAt, getNote]);
+  }, [effectiveCaughtPokemon, caughtAt, getNote]);
 
   return (
     <MainLayout>
@@ -156,18 +164,31 @@ function PokedexContent() {
           <PokedexProgress total={totalFromApi} />
         </div>
       )}
-      {isLoading && (
+      {isLoading && !(error && offlineCaught.length > 0) && (
         <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
           <Spinner />
           <span>Loading…</span>
         </div>
       )}
-      {error && (
+      {error && offlineCaught.length === 0 && (
         <ErrorMessage
           message={
             error instanceof Error ? error.message : "Failed to load Pokémon"
           }
         />
+      )}
+      {error && offlineCaught.length > 0 && (
+        <p
+          className="mb-4 rounded bg-amber-100 px-3 py-2 text-sm text-amber-900 dark:bg-amber-900/40 dark:text-amber-200"
+          role="status"
+        >
+          Showing saved data — you may be offline. Catch/remove and notes still work.
+        </p>
+      )}
+      {error && offlineCaught.length === 0 && (
+        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+          Your caught list and notes are saved. Connect to the internet to see your full Pokédex here.
+        </p>
       )}
       {!isLoading && !error && noCaught && (
         <p className="text-zinc-600 dark:text-zinc-400">
@@ -178,7 +199,7 @@ function PokedexContent() {
           .
         </p>
       )}
-      {!isLoading && !error && !noCaught && caughtPokemon.length > 0 && (
+      {(!isLoading || (error && offlineCaught.length > 0)) && !noCaught && effectiveCaughtPokemon.length > 0 && (
         <>
           <FilterBar {...filters}>
             <PokedexViewToggle viewMode={viewMode} setViewMode={setViewMode} />
