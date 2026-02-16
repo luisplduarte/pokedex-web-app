@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { getTypeIconUrl } from "@/features/filters/typeIcons";
 import { Trash2 } from "lucide-react";
+import { SharePokemonButton } from "@/features/sharing";
 
 interface PokemonDetailProps {
   pokemon: PokemonDetail;
@@ -11,6 +12,7 @@ interface PokemonDetailProps {
   caughtAt?: string;
   onCatch?: () => void;
   onRelease?: () => void;
+  shareNote?: string;
 }
 
 const heightInM = (dm: number) => dm / 10;
@@ -42,6 +44,7 @@ export function PokemonDetail({
   caughtAt,
   onCatch,
   onRelease,
+  shareNote,
 }: PokemonDetailProps) {
   const statsEntries = Object.entries(pokemon.stats) as [
     keyof PokemonDetail["stats"],
@@ -66,16 +69,23 @@ export function PokemonDetail({
             <h1 className="text-2xl font-bold capitalize text-zinc-900 dark:text-zinc-100">
               {pokemon.name}
             </h1>
-            {isCaught && onRelease && (
-              <button
-                type="button"
-                onClick={onRelease}
-                className="inline-flex items-center justify-center text-red-500 hover:text-red-600 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900"
-                aria-label={`Release ${pokemon.name}`}
-              >
-                <Trash2 className="h-5 w-5" aria-hidden="true" />
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              <SharePokemonButton
+                pokemon={pokemon}
+                note={shareNote}
+                className=""
+              />
+              {isCaught && onRelease && (
+                <button
+                  type="button"
+                  onClick={onRelease}
+                  className="inline-flex items-center justify-center text-red-500 hover:text-red-600 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900"
+                  aria-label={`Release ${pokemon.name}`}
+                >
+                  <Trash2 className="h-5 w-5" aria-hidden="true" />
+                </button>
+              )}
+            </div>
           </div>
           <div className="mt-2 flex flex-wrap justify-center gap-1.5 sm:justify-start">
             {pokemon.types.length ? (

@@ -87,12 +87,14 @@ describe("PokedexPage", () => {
     render(<PokedexPage />);
 
     fireEvent.click(screen.getByRole("button", { name: /export pokédex as csv/i }));
-    fireEvent.click(screen.getByRole("button", { name: /export/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^export$/i }));
 
     expect(mockDownloadCsv).toHaveBeenCalledTimes(1);
     const [csvContent, filename] = mockDownloadCsv.mock.calls[0];
 
-    expect(csvContent).toContain("Id,Name,Types,Height,Weight,Caught At,Note");
+    expect(csvContent).toContain(
+      "Id,Name,Types,Height (m),Weight (kg),Caught At,Note"
+    );
     expect(csvContent).toContain("bulbasaur");
     expect(csvContent).toContain("First catch");
     expect(csvContent).toContain("2025/02/01 12:00:00");

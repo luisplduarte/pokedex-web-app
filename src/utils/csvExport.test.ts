@@ -14,13 +14,13 @@ const oneRow: CsvExportRow = {
 describe("buildCsv", () => {
   it("returns header line only for empty list", () => {
     const out = buildCsv([]);
-    expect(out).toBe("Id,Name,Types,Height,Weight,Caught At,Note\n");
+    expect(out).toBe("Id,Name,Types,Height (m),Weight (kg),Caught At,Note\n");
   });
 
   it("includes correct headers", () => {
     const out = buildCsv([oneRow]);
     const firstLine = out.split("\n")[0];
-    expect(firstLine).toBe("Id,Name,Types,Height,Weight,Caught At,Note");
+    expect(firstLine).toBe("Id,Name,Types,Height (m),Weight (kg),Caught At,Note");
   });
 
   it("outputs one row with all fields and formats caughtAt as yyyy/mm/dd hh:mm:ss", () => {

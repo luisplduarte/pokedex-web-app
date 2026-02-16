@@ -2,6 +2,8 @@ import { describe, it, expect } from "vitest";
 import {
   filterByName,
   filterByType,
+  filterByHeightRange,
+  filterByWeightRange,
   sortBy,
   type FilterSortItem,
 } from "./filters";
@@ -12,11 +14,46 @@ const baseItem: FilterSortItem = {
 };
 
 const list: FilterSortItem[] = [
-  { ...baseItem, id: 1, name: "bulbasaur", types: ["grass", "poison"] },
-  { ...baseItem, id: 2, name: "ivysaur", types: ["grass", "poison"] },
-  { ...baseItem, id: 3, name: "charizard", types: ["fire", "flying"] },
-  { ...baseItem, id: 4, name: "pikachu", types: ["electric"] },
-  { ...baseItem, id: 5, name: "charmander", types: ["fire"] },
+  {
+    ...baseItem,
+    id: 1,
+    name: "bulbasaur",
+    types: ["grass", "poison"],
+    height: 7, // 0.7 m
+    weight: 69, // 6.9 kg
+  },
+  {
+    ...baseItem,
+    id: 2,
+    name: "ivysaur",
+    types: ["grass", "poison"],
+    height: 10, // 1.0 m
+    weight: 130, // 13.0 kg
+  },
+  {
+    ...baseItem,
+    id: 3,
+    name: "charizard",
+    types: ["fire", "flying"],
+    height: 17, // 1.7 m
+    weight: 905, // 90.5 kg
+  },
+  {
+    ...baseItem,
+    id: 4,
+    name: "pikachu",
+    types: ["electric"],
+    height: 4, // 0.4 m
+    weight: 60, // 6.0 kg
+  },
+  {
+    ...baseItem,
+    id: 5,
+    name: "charmander",
+    types: ["fire"],
+    height: 6, // 0.6 m
+    weight: 85, // 8.5 kg
+  },
 ];
 
 describe("filterByName", () => {
@@ -75,6 +112,82 @@ describe("filterByType", () => {
     const result = filterByType(list, ["electric"]);
     expect(result).toHaveLength(1);
     expect(result[0].name).toBe("pikachu");
+  });
+});
+
+describe("filterByHeightRange", () => {
+  it("returns full list when no bounds are provided", () => {
+    expect(filterByHeightRange(list, undefined, undefined)).toEqual(list);
+    expect(filterByHeightRange(list, null, null)).toEqual(list);
+  });
+
+  it("filters by minimum height in metres", () => {
+    const result = filterByHeightRange(list, 0.7, undefined);
+    expect(result.map((x) => x.name)).toEqual([
+      "bulbasaur",
+      "ivysaur",
+      "charizard",
+    ]);
+  });
+
+  it("filters by maximum height in metres", () => {
+    const result = filterByHeightRange(list, undefined, 0.7);
+    expect(result.map((x) => x.name)).toEqual([
+      "bulbasaur",
+      "pikachu",
+      "charmander",
+    ]);
+  });
+
+  it("filters by height range in metres", () => {
+    const result = filterByHeightRange(list, 0.6, 1.0);
+    expect(result.map((x) => x.name)).toEqual([
+      "bulbasaur",
+      "ivysaur",
+      "charmander",
+    ]);
+  });
+
+  it("excludes items without height when bounds are set", () => {
+    const withMissing = [...list, { ...baseItem, id: 99, name: "mystery", types: ["normal"] }];
+    const result = filterByHeightRange(withMissing, 0.5, 2.0);
+    expect(result.some((x) => x.name === "mystery")).toBe(false);
+  });
+});
+
+describe("filterByWeightRange", () => {
+  it("returns full list when no bounds are provided", () => {
+    expect(filterByWeightRange(list, undefined, undefined)).toEqual(list);
+    expect(filterByWeightRange(list, null, null)).toEqual(list);
+  });
+
+  it("filters by minimum weight in kilograms", () => {
+    const result = filterByWeightRange(list, 10, undefined);
+    expect(result.map((x) => x.name)).toEqual(["ivysaur", "charizard"]);
+  });
+
+  it("filters by maximum weight in kilograms", () => {
+    const result = filterByWeightRange(list, undefined, 10);
+    expect(result.map((x) => x.name)).toEqual([
+      "bulbasaur",
+      "pikachu",
+      "charmander",
+    ]);
+  });
+
+  it("filters by weight range in kilograms", () => {
+    const result = filterByWeightRange(list, 6, 9);
+    expect(result.map((x) => x.name)).toEqual([
+      "bulbasaur",
+      "pikachu",
+      "charmander",
+    ]);
+  });
+
+  it("excludes items without weight when bounds are set", () => {
+    const withMissing = [...list, { ...baseItem, id: 100, name: "light", types: ["normal"] }];
+    const result = filterByWeightRange(withMissing, 1, 100);
+    expect(result.some((x) => x.name === "light")).toBe(false);
   });
 });
 
@@ -156,6 +269,76 @@ describe("sortBy", () => {
     ];
     const result = sortBy(mixed, "caughtAt", "asc");
     expect(result[0].name).toBe("ivysaur");
+  });
+
+  it("sorts by height asc", () => {
+    const result = sortBy(list, "height", "asc");
+    expect(result.map((x) => x.name)).toEqual([
+      "pikachu", // 0.4 m
+      "charmander", // 0.6 m
+      "bulbasaur", // 0.7 m
+      "ivysaur", // 1.0 m
+      "charizard", // 1.7 m
+    ]);
+  });
+
+  it("sorts by height desc", () => {
+    const result = sortBy(list, "height", "desc");
+    expect(result.map((x) => x.name)).toEqual([
+      "charizard", // 1.7 m
+      "ivysaur", // 1.0 m
+      "bulbasaur", // 0.7 m
+      "charmander", // 0.6 m
+      "pikachu", // 0.4 m
+    ]);
+  });
+
+  it("treats missing height as 0 and uses name as tiebreaker", () => {
+    const { height: _, ...ivysaurWithoutHeight } = list[1];
+    const withMissing: FilterSortItem[] = [
+      { ...list[0], height: 7 }, // bulbasaur
+      ivysaurWithoutHeight, // ivysaur, no height (treated as 0)
+      { ...list[2], height: 17 }, // charizard
+    ];
+    const result = sortBy(withMissing, "height", "asc");
+    expect(result[0].name).toBe("ivysaur"); // missing height = 0, comes first
+    expect(result[1].name).toBe("bulbasaur"); // height 7
+    expect(result[2].name).toBe("charizard"); // height 17
+  });
+
+  it("sorts by weight asc", () => {
+    const result = sortBy(list, "weight", "asc");
+    expect(result.map((x) => x.name)).toEqual([
+      "pikachu", // 6.0 kg (60 hg)
+      "bulbasaur", // 6.9 kg (69 hg)
+      "charmander", // 8.5 kg (85 hg)
+      "ivysaur", // 13.0 kg (130 hg)
+      "charizard", // 90.5 kg (905 hg)
+    ]);
+  });
+
+  it("sorts by weight desc", () => {
+    const result = sortBy(list, "weight", "desc");
+    expect(result.map((x) => x.name)).toEqual([
+      "charizard", // 90.5 kg (905 hg)
+      "ivysaur", // 13.0 kg (130 hg)
+      "charmander", // 8.5 kg (85 hg)
+      "bulbasaur", // 6.9 kg (69 hg)
+      "pikachu", // 6.0 kg (60 hg)
+    ]);
+  });
+
+  it("treats missing weight as 0 and uses name as tiebreaker", () => {
+    const { weight: _, ...ivysaurWithoutWeight } = list[1];
+    const withMissing: FilterSortItem[] = [
+      { ...list[0], weight: 69 }, // bulbasaur
+      ivysaurWithoutWeight, // ivysaur, no weight (treated as 0)
+      { ...list[2], weight: 905 }, // charizard
+    ];
+    const result = sortBy(withMissing, "weight", "asc");
+    expect(result[0].name).toBe("ivysaur"); // missing weight = 0, comes first
+    expect(result[1].name).toBe("bulbasaur"); // weight 69
+    expect(result[2].name).toBe("charizard"); // weight 905
   });
 
   it("empty list returns empty", () => {

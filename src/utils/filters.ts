@@ -4,9 +4,13 @@ export interface FilterSortItem {
   name: string;
   types: string[];
   caughtAt?: string;
+  /** Height in decimetres (as returned by PokéAPI). */
+  height?: number;
+  /** Weight in hectograms (as returned by PokéAPI). */
+  weight?: number;
 }
 
-export type SortKey = "id" | "name" | "caughtAt";
+export type SortKey = "id" | "name" | "height" | "weight" | "caughtAt";
 export type SortDir = "asc" | "desc";
 
 export function filterByName<T extends { name: string }>(
@@ -33,8 +37,55 @@ export function filterByType<T extends { types: string[] }>(
 }
 
 /**
- * Sort list by key and direction. Keys: id, name, caughtAt (timestamp).
- * Missing id/caughtAt are treated as 0 for ordering.
+ * Filter list by height range (in metres).
+ */
+export function filterByHeightRange<T extends { height?: number }>(
+  list: T[],
+  minHeightMeters?: number | null,
+  maxHeightMeters?: number | null
+): T[] {
+  const hasMin = minHeightMeters != null && !Number.isNaN(minHeightMeters);
+  const hasMax = maxHeightMeters != null && !Number.isNaN(maxHeightMeters);
+
+  if (!hasMin && !hasMax) return list;
+
+  const minDm = hasMin ? minHeightMeters! * 10 : undefined;
+  const maxDm = hasMax ? maxHeightMeters! * 10 : undefined;
+
+  return list.filter((item) => {
+    if (item.height == null) return false;
+    if (minDm != null && item.height < minDm) return false;
+    if (maxDm != null && item.height > maxDm) return false;
+    return true;
+  });
+}
+
+/**
+ * Filter list by weight range (in kilograms).
+ */
+export function filterByWeightRange<T extends { weight?: number }>(
+  list: T[],
+  minWeightKg?: number | null,
+  maxWeightKg?: number | null
+): T[] {
+  const hasMin = minWeightKg != null && !Number.isNaN(minWeightKg);
+  const hasMax = maxWeightKg != null && !Number.isNaN(maxWeightKg);
+
+  if (!hasMin && !hasMax) return list;
+
+  const minHg = hasMin ? minWeightKg! * 10 : undefined;
+  const maxHg = hasMax ? maxWeightKg! * 10 : undefined;
+
+  return list.filter((item) => {
+    if (item.weight == null) return false;
+    if (minHg != null && item.weight < minHg) return false;
+    if (maxHg != null && item.weight > maxHg) return false;
+    return true;
+  });
+}
+
+/**
+ * Sort list by key and direction. Keys: id, name, height, weight, caughtAt (timestamp).
  */
 export function sortBy<T extends FilterSortItem>(
   list: T[],
@@ -50,6 +101,24 @@ export function sortBy<T extends FilterSortItem>(
         return mult * ((a.id ?? 0) - (b.id ?? 0));
       case "name":
         return mult * a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+      case "height": {
+        const aHeight = a.height ?? 0;
+        const bHeight = b.height ?? 0;
+        const heightDiff = aHeight - bHeight;
+        // If heights are equal, use name as tiebreaker
+        return heightDiff !== 0
+          ? mult * heightDiff
+          : a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+      }
+      case "weight": {
+        const aWeight = a.weight ?? 0;
+        const bWeight = b.weight ?? 0;
+        const weightDiff = aWeight - bWeight;
+        // If weights are equal, use name as tiebreaker
+        return weightDiff !== 0
+          ? mult * weightDiff
+          : a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+      }
       case "caughtAt": {
         const aTime = a.caughtAt ? new Date(a.caughtAt).getTime() : 0;
         const bTime = b.caughtAt ? new Date(b.caughtAt).getTime() : 0;

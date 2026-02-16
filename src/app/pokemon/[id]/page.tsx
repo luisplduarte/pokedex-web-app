@@ -7,7 +7,6 @@ import { Spinner } from "@/components/ui/Spinner";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { PokemonDetail, usePokemonDetail } from "@/features/pokemon";
 import { PokemonNote } from "@/features/notes";
-import { SharePokemonButton } from "@/features/sharing";
 import { usePokedexStore } from "@/store/pokedexStore";
 
 export default function PokemonDetailPage() {
@@ -28,28 +27,20 @@ export default function PokemonDetailPage() {
   return (
     <MainLayout>
       <PageHeader title={pokemon ? pokemon.name : "Pokémon"}>
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              if (typeof window !== "undefined" && window.history.length > 1) {
-                router.back();
-              } else {
-                router.push("/");
-              }
-            }}
-            className="inline-block text-left text-sm text-blue-600 hover:underline dark:text-blue-400"
-            aria-label="Back to list"
-          >
-            ← Back to list
-          </button>
-          {pokemon && (
-            <SharePokemonButton
-              pokemon={pokemon}
-              note={id != null ? getNote(id) : undefined}
-            />
-          )}
-        </div>
+        <button
+          type="button"
+          onClick={() => {
+            if (typeof window !== "undefined" && window.history.length > 1) {
+              router.back();
+            } else {
+              router.push("/");
+            }
+          }}
+          className="inline-block text-left text-sm text-blue-600 hover:underline dark:text-blue-400"
+          aria-label="Back to list"
+        >
+          ← Back to list
+        </button>
       </PageHeader>
       {isLoading && (
         <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
@@ -72,6 +63,7 @@ export default function PokemonDetailPage() {
             caughtAt={caughtAtDate}
             onCatch={id != null ? () => addCaught(id) : undefined}
             onRelease={id != null ? () => removeCaught(id) : undefined}
+            shareNote={id != null ? getNote(id) : undefined}
           />
           {id != null && (
             <div className="mt-4">
