@@ -4,6 +4,10 @@ export interface FilterSortItem {
   name: string;
   types: string[];
   caughtAt?: string;
+  /** Height in decimetres (as returned by PokéAPI). */
+  height?: number;
+  /** Weight in hectograms (as returned by PokéAPI). */
+  weight?: number;
 }
 
 export type SortKey = "id" | "name" | "caughtAt";
@@ -30,6 +34,54 @@ export function filterByType<T extends { types: string[] }>(
   return list.filter((item) =>
     item.types.some((type) => set.has(type.toLowerCase()))
   );
+}
+
+/**
+ * Filter list by height range (in metres).
+ */
+export function filterByHeightRange<T extends { height?: number }>(
+  list: T[],
+  minHeightMeters?: number | null,
+  maxHeightMeters?: number | null
+): T[] {
+  const hasMin = minHeightMeters != null && !Number.isNaN(minHeightMeters);
+  const hasMax = maxHeightMeters != null && !Number.isNaN(maxHeightMeters);
+
+  if (!hasMin && !hasMax) return list;
+
+  const minDm = hasMin ? minHeightMeters! * 10 : undefined;
+  const maxDm = hasMax ? maxHeightMeters! * 10 : undefined;
+
+  return list.filter((item) => {
+    if (item.height == null) return false;
+    if (minDm != null && item.height < minDm) return false;
+    if (maxDm != null && item.height > maxDm) return false;
+    return true;
+  });
+}
+
+/**
+ * Filter list by weight range (in kilograms).
+ */
+export function filterByWeightRange<T extends { weight?: number }>(
+  list: T[],
+  minWeightKg?: number | null,
+  maxWeightKg?: number | null
+): T[] {
+  const hasMin = minWeightKg != null && !Number.isNaN(minWeightKg);
+  const hasMax = maxWeightKg != null && !Number.isNaN(maxWeightKg);
+
+  if (!hasMin && !hasMax) return list;
+
+  const minHg = hasMin ? minWeightKg! * 10 : undefined;
+  const maxHg = hasMax ? maxWeightKg! * 10 : undefined;
+
+  return list.filter((item) => {
+    if (item.weight == null) return false;
+    if (minHg != null && item.weight < minHg) return false;
+    if (maxHg != null && item.weight > maxHg) return false;
+    return true;
+  });
 }
 
 /**

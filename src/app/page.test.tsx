@@ -84,11 +84,13 @@ describe("Home page", () => {
 
     render(<Home />);
 
-    const releaseButton = screen.getByRole("button", { name: /release/i });
+    const releaseButton = screen.getByRole("button", {
+      name: /release bulbasaur/i,
+    });
     fireEvent.click(releaseButton);
 
     const confirmReleaseButton = screen.getByRole("button", {
-      name: /release/i,
+      name: /^release$/i,
     });
     fireEvent.click(confirmReleaseButton);
 

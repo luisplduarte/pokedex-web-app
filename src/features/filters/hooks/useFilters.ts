@@ -7,6 +7,10 @@ import type { SortDir, SortKey } from "@/utils/filters";
 const PARAM_NAME = "q";
 const PARAM_TYPES = "types";
 const PARAM_SORT = "sort";
+const PARAM_MIN_HEIGHT = "minH";
+const PARAM_MAX_HEIGHT = "maxH";
+const PARAM_MIN_WEIGHT = "minW";
+const PARAM_MAX_WEIGHT = "maxW";
 
 export type SortOption =
   | "name-asc"
@@ -39,6 +43,12 @@ function parseSortOption(value: string | null): SortOption {
   return DEFAULT_SORT_OPTION;
 }
 
+function parseNumberParam(value: string | null): number | null {
+  if (!value) return null;
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
 function sortOptionToKeyDir(option: SortOption): { key: SortKey; dir: SortDir } {
   const [key, dir] = option.split("-") as [SortKey, SortDir];
   return { key, dir };
@@ -61,6 +71,22 @@ export function useFilters() {
   const { key: sortKey, dir: sortDir } = useMemo(
     () => sortOptionToKeyDir(sortOption),
     [sortOption]
+  );
+  const minHeight = useMemo(
+    () => parseNumberParam(searchParams.get(PARAM_MIN_HEIGHT)),
+    [searchParams]
+  );
+  const maxHeight = useMemo(
+    () => parseNumberParam(searchParams.get(PARAM_MAX_HEIGHT)),
+    [searchParams]
+  );
+  const minWeight = useMemo(
+    () => parseNumberParam(searchParams.get(PARAM_MIN_WEIGHT)),
+    [searchParams]
+  );
+  const maxWeight = useMemo(
+    () => parseNumberParam(searchParams.get(PARAM_MAX_WEIGHT)),
+    [searchParams]
   );
 
   const setParams = useCallback(
@@ -105,5 +131,29 @@ export function useFilters() {
     sortDir,
     sortOption,
     setSortOption,
+    minHeight,
+    maxHeight,
+    minWeight,
+    maxWeight,
+    setMinHeight: (value: number | null) =>
+      setParams({
+        [PARAM_MIN_HEIGHT]:
+          value == null || Number.isNaN(value) ? undefined : String(value),
+      }),
+    setMaxHeight: (value: number | null) =>
+      setParams({
+        [PARAM_MAX_HEIGHT]:
+          value == null || Number.isNaN(value) ? undefined : String(value),
+      }),
+    setMinWeight: (value: number | null) =>
+      setParams({
+        [PARAM_MIN_WEIGHT]:
+          value == null || Number.isNaN(value) ? undefined : String(value),
+      }),
+    setMaxWeight: (value: number | null) =>
+      setParams({
+        [PARAM_MAX_WEIGHT]:
+          value == null || Number.isNaN(value) ? undefined : String(value),
+      }),
   };
 }

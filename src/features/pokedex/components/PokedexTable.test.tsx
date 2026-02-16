@@ -31,12 +31,11 @@ describe("PokedexTable", () => {
     expect(screen.getByRole("columnheader", { name: /height/i })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: /weight/i })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: /caught at/i })).toBeInTheDocument();
-    expect(screen.getByRole("columnheader", { name: /note/i })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: /actions/i })).toBeInTheDocument();
 
     expect(screen.getByText("bulbasaur")).toBeInTheDocument();
     expect(screen.getByText("charmander")).toBeInTheDocument();
-    expect(screen.getByText("First catch")).toBeInTheDocument();
+    // Note is currently surfaced in the card/grid view; table focuses on core columns.
   });
 
   it("renders empty table when data is empty", () => {

@@ -22,6 +22,8 @@ import { FilterBar, useFilters } from "@/features/filters";
 import {
   filterByName,
   filterByType,
+  filterByHeightRange,
+  filterByWeightRange,
   sortBy,
 } from "@/utils/filters";
 import { buildCsv, type CsvExportRow } from "@/utils/csvExport";
@@ -42,7 +44,16 @@ function PokedexContent() {
   const removeCaught = usePokedexStore((s) => s.removeCaught);
 
   const filters = useFilters();
-  const { nameQuery, selectedTypes, sortKey, sortDir } = filters;
+  const {
+    nameQuery,
+    selectedTypes,
+    sortKey,
+    sortDir,
+    minHeight,
+    maxHeight,
+    minWeight,
+    maxWeight,
+  } = filters;
   const { viewMode, setViewMode } = usePokedexViewMode();
   const [confirmExportOpen, setConfirmExportOpen] = useState(false);
 
@@ -58,7 +69,9 @@ function PokedexContent() {
     }));
     const byName = filterByName(withCaughtAt, nameQuery);
     const byType = filterByType(byName, selectedTypes);
-    const sorted = sortBy(byType, sortKey, sortDir);
+    const byHeight = filterByHeightRange(byType, minHeight, maxHeight);
+    const byWeight = filterByWeightRange(byHeight, minWeight, maxWeight);
+    const sorted = sortBy(byWeight, sortKey, sortDir);
     return sorted.map((p) => ({
       id: p.id,
       name: p.name,
@@ -69,7 +82,19 @@ function PokedexContent() {
       caughtAt: caughtAt[p.id],
       note: getNote(p.id),
     }));
-  }, [caughtPokemon, caughtAt, getNote, nameQuery, selectedTypes, sortKey, sortDir]);
+  }, [
+    caughtPokemon,
+    caughtAt,
+    getNote,
+    nameQuery,
+    selectedTypes,
+    sortKey,
+    sortDir,
+    minHeight,
+    maxHeight,
+    minWeight,
+    maxWeight,
+  ]);
 
   const noCaught = caughtIds.size === 0;
 

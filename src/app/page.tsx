@@ -14,6 +14,8 @@ import { FilterBar, useFilters } from "@/features/filters";
 import {
   filterByName,
   filterByType,
+  filterByHeightRange,
+  filterByWeightRange,
   sortBy,
 } from "@/utils/filters";
 import type { Pokemon } from "@/types/pokemon";
@@ -35,7 +37,16 @@ function HomeContent() {
   const removeCaught = usePokedexStore((s) => s.removeCaught);
 
   const filters = useFilters();
-  const { nameQuery, selectedTypes, sortKey, sortDir } = filters;
+  const {
+    nameQuery,
+    selectedTypes,
+    sortKey,
+    sortDir,
+    minHeight,
+    maxHeight,
+    minWeight,
+    maxWeight,
+  } = filters;
 
   const filteredAndSorted = useMemo((): Pokemon[] => {
     const withCaughtAt: ListItem[] = pokemon.map((p) => ({
@@ -44,8 +55,21 @@ function HomeContent() {
     }));
     const byName = filterByName(withCaughtAt, nameQuery);
     const byType = filterByType(byName, selectedTypes);
-    return sortBy(byType, sortKey, sortDir);
-  }, [pokemon, caughtAt, nameQuery, selectedTypes, sortKey, sortDir]);
+    const byHeight = filterByHeightRange(byType, minHeight, maxHeight);
+    const byWeight = filterByWeightRange(byHeight, minWeight, maxWeight);
+    return sortBy(byWeight, sortKey, sortDir);
+  }, [
+    pokemon,
+    caughtAt,
+    nameQuery,
+    selectedTypes,
+    sortKey,
+    sortDir,
+    minHeight,
+    maxHeight,
+    minWeight,
+    maxWeight,
+  ]);
 
   const toggleCaught = (id: number, isCaught: boolean) => {
     if (isCaught) removeCaught(id);

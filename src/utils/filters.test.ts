@@ -2,6 +2,8 @@ import { describe, it, expect } from "vitest";
 import {
   filterByName,
   filterByType,
+  filterByHeightRange,
+  filterByWeightRange,
   sortBy,
   type FilterSortItem,
 } from "./filters";
@@ -12,11 +14,46 @@ const baseItem: FilterSortItem = {
 };
 
 const list: FilterSortItem[] = [
-  { ...baseItem, id: 1, name: "bulbasaur", types: ["grass", "poison"] },
-  { ...baseItem, id: 2, name: "ivysaur", types: ["grass", "poison"] },
-  { ...baseItem, id: 3, name: "charizard", types: ["fire", "flying"] },
-  { ...baseItem, id: 4, name: "pikachu", types: ["electric"] },
-  { ...baseItem, id: 5, name: "charmander", types: ["fire"] },
+  {
+    ...baseItem,
+    id: 1,
+    name: "bulbasaur",
+    types: ["grass", "poison"],
+    height: 7, // 0.7 m
+    weight: 69, // 6.9 kg
+  },
+  {
+    ...baseItem,
+    id: 2,
+    name: "ivysaur",
+    types: ["grass", "poison"],
+    height: 10, // 1.0 m
+    weight: 130, // 13.0 kg
+  },
+  {
+    ...baseItem,
+    id: 3,
+    name: "charizard",
+    types: ["fire", "flying"],
+    height: 17, // 1.7 m
+    weight: 905, // 90.5 kg
+  },
+  {
+    ...baseItem,
+    id: 4,
+    name: "pikachu",
+    types: ["electric"],
+    height: 4, // 0.4 m
+    weight: 60, // 6.0 kg
+  },
+  {
+    ...baseItem,
+    id: 5,
+    name: "charmander",
+    types: ["fire"],
+    height: 6, // 0.6 m
+    weight: 85, // 8.5 kg
+  },
 ];
 
 describe("filterByName", () => {
@@ -75,6 +112,82 @@ describe("filterByType", () => {
     const result = filterByType(list, ["electric"]);
     expect(result).toHaveLength(1);
     expect(result[0].name).toBe("pikachu");
+  });
+});
+
+describe("filterByHeightRange", () => {
+  it("returns full list when no bounds are provided", () => {
+    expect(filterByHeightRange(list, undefined, undefined)).toEqual(list);
+    expect(filterByHeightRange(list, null, null)).toEqual(list);
+  });
+
+  it("filters by minimum height in metres", () => {
+    const result = filterByHeightRange(list, 0.7, undefined);
+    expect(result.map((x) => x.name)).toEqual([
+      "bulbasaur",
+      "ivysaur",
+      "charizard",
+    ]);
+  });
+
+  it("filters by maximum height in metres", () => {
+    const result = filterByHeightRange(list, undefined, 0.7);
+    expect(result.map((x) => x.name)).toEqual([
+      "bulbasaur",
+      "pikachu",
+      "charmander",
+    ]);
+  });
+
+  it("filters by height range in metres", () => {
+    const result = filterByHeightRange(list, 0.6, 1.0);
+    expect(result.map((x) => x.name)).toEqual([
+      "bulbasaur",
+      "ivysaur",
+      "charmander",
+    ]);
+  });
+
+  it("excludes items without height when bounds are set", () => {
+    const withMissing = [...list, { ...baseItem, id: 99, name: "mystery", types: ["normal"] }];
+    const result = filterByHeightRange(withMissing, 0.5, 2.0);
+    expect(result.some((x) => x.name === "mystery")).toBe(false);
+  });
+});
+
+describe("filterByWeightRange", () => {
+  it("returns full list when no bounds are provided", () => {
+    expect(filterByWeightRange(list, undefined, undefined)).toEqual(list);
+    expect(filterByWeightRange(list, null, null)).toEqual(list);
+  });
+
+  it("filters by minimum weight in kilograms", () => {
+    const result = filterByWeightRange(list, 10, undefined);
+    expect(result.map((x) => x.name)).toEqual(["ivysaur", "charizard"]);
+  });
+
+  it("filters by maximum weight in kilograms", () => {
+    const result = filterByWeightRange(list, undefined, 10);
+    expect(result.map((x) => x.name)).toEqual([
+      "bulbasaur",
+      "pikachu",
+      "charmander",
+    ]);
+  });
+
+  it("filters by weight range in kilograms", () => {
+    const result = filterByWeightRange(list, 6, 9);
+    expect(result.map((x) => x.name)).toEqual([
+      "bulbasaur",
+      "pikachu",
+      "charmander",
+    ]);
+  });
+
+  it("excludes items without weight when bounds are set", () => {
+    const withMissing = [...list, { ...baseItem, id: 100, name: "light", types: ["normal"] }];
+    const result = filterByWeightRange(withMissing, 1, 100);
+    expect(result.some((x) => x.name === "light")).toBe(false);
   });
 });
 
