@@ -126,10 +126,9 @@ function PokedexContent() {
       )}
       {!isLoading && !error && !noCaught && caughtPokemon.length > 0 && (
         <>
-          <div className="flex flex-wrap items-center gap-4">
-            <FilterBar {...filters} />
+          <FilterBar {...filters}>
             <PokedexViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-          </div>
+          </FilterBar>
           {viewMode === "table" ? (
             <PokedexTable data={tableRows} onRemove={removeCaught} />
           ) : (

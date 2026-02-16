@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useState } from "react";
 import type { SortOption } from "../hooks/useFilters";
 import { getTypeIconUrl } from "../typeIcons";
@@ -51,6 +52,8 @@ export interface FilterBarProps {
   setSelectedTypes: (types: string[]) => void;
   sortOption: SortOption;
   setSortOption: (option: SortOption) => void;
+  /** Optional slot for view toggle (e.g. Table/Grid), shown to the right of Sort by on larger screens. */
+  children?: ReactNode;
 }
 
 export function FilterBar({
@@ -60,6 +63,7 @@ export function FilterBar({
   setSelectedTypes,
   sortOption,
   setSortOption,
+  children,
 }: FilterBarProps) {
   const [typeFilterOpen, setTypeFilterOpen] = useState(false);
 
@@ -71,7 +75,7 @@ export function FilterBar({
   };
 
   return (
-    <div className="flex flex-col gap-4 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="flex flex-col gap-4 rounded-lg border border-zinc-200 bg-white p-4 mb-4 dark:border-zinc-800 dark:bg-zinc-900">
       <div className="flex flex-col gap-2">
         <label
           htmlFor="filter-name"
@@ -164,7 +168,7 @@ export function FilterBar({
         </div>
       </fieldset>
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+      <div className="flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-2">
           <label
             htmlFor="filter-sort"
@@ -186,6 +190,7 @@ export function FilterBar({
             ))}
           </select>
         </div>
+        {children ? <div className="sm:ml-auto">{children}</div> : null}
       </div>
     </div>
   );
