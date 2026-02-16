@@ -1,13 +1,21 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { fetchPokemonList, fetchPokemonListPage } from "@/services/pokeapi";
+import { fetchPokemonListPage } from "@/services/pokeapi";
 import type { Pokemon } from "@/types/pokemon";
 
 const PAGE_SIZE = 20;
 
+interface PokemonListResult {
+  pokemon: Pokemon[];
+  total: number;
+}
+
 export function usePokemonList(limit: number = 20) {
-  return useQuery<Pokemon[], Error>({
+  return useQuery<PokemonListResult, Error>({
     queryKey: ["pokemon", "list", limit],
-    queryFn: () => fetchPokemonList(limit),
+    queryFn: async () => {
+      const { results, total } = await fetchPokemonListPage(limit, 0);
+      return { pokemon: results, total };
+    },
   });
 }
 

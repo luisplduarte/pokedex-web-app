@@ -32,7 +32,9 @@ type ListItem = Pokemon & { caughtAt?: string };
 const LIST_LIMIT = 151;
 
 function PokedexContent() {
-  const { data: allPokemon = [], isLoading, error } = usePokemonList(LIST_LIMIT);
+  const { data, isLoading, error } = usePokemonList(LIST_LIMIT);
+  const allPokemon = data?.pokemon ?? [];
+  const totalFromApi = data?.total;
   const caughtIds = usePokedexStore((s) => s.caughtIds);
   const caughtAt = usePokedexStore((s) => s.caughtAt);
   const getNote = usePokedexStore((s) => s.getNote);
@@ -87,7 +89,6 @@ function PokedexContent() {
     <MainLayout>
       <PageHeader title="My Pokédex">
         <div className="flex flex-wrap items-center gap-3">
-          <PokedexProgress />
           <Button
             type="button"
             variant="secondary"
@@ -104,6 +105,11 @@ function PokedexContent() {
           ← Back to all Pokémon
         </Link>
       </PageHeader>
+      {totalFromApi != null && (
+        <div className="mt-4 flex justify-center">
+          <PokedexProgress total={totalFromApi} />
+        </div>
+      )}
       {isLoading && (
         <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
           <Spinner />
@@ -148,9 +154,6 @@ export default function PokedexPage() {
       fallback={
         <MainLayout>
           <PageHeader title="My Pokédex">
-            <div className="flex flex-wrap items-center gap-3">
-              <PokedexProgress />
-            </div>
             <Link
               href="/"
               className="mt-2 inline-block text-sm text-blue-600 hover:underline dark:text-blue-400"

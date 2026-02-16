@@ -64,7 +64,7 @@ export function PokedexTable({ data, onRemove }: PokedexTableProps) {
       cell: ({ row }) => (
         <Link
           href={`/pokemon/${row.original.id}`}
-          className="font-medium capitalize text-blue-600 hover:underline dark:text-blue-400"
+          className="font-medium capitalize text-white hover:underline dark:text-white"
         >
           {row.original.name}
         </Link>
@@ -144,7 +144,7 @@ export function PokedexTable({ data, onRemove }: PokedexTableProps) {
             <div className="flex items-center gap-2">
               <Link
                 href={`/pokemon/${row.original.id}`}
-                className="inline-flex items-center justify-center rounded-md p-1 text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:text-blue-400 dark:hover:bg-zinc-800"
+                className="inline-flex items-center justify-center rounded-md p-1 text-white hover:bg-blue-50 hover:text-white dark:text-white dark:hover:bg-zinc-800"
                 aria-label={`View details for ${row.original.name}`}
               >
                 <svg

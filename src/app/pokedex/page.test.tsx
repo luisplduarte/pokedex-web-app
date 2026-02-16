@@ -25,7 +25,10 @@ const mockPokemonList = [
 
 vi.mock("@/hooks/usePokemonList", () => ({
   usePokemonList: () => ({
-    data: mockPokemonList,
+    data: {
+      pokemon: mockPokemonList,
+      total: mockPokemonList.length,
+    },
     isLoading: false,
     error: null,
   }),
