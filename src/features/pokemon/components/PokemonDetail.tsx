@@ -1,6 +1,8 @@
 import type { PokemonDetail } from "@/types/pokemon";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { getTypeIconUrl } from "@/features/filters/typeIcons";
+import { Trash2 } from "lucide-react";
 
 interface PokemonDetailProps {
   pokemon: PokemonDetail;
@@ -60,20 +62,49 @@ export function PokemonDetail({
           <div className="h-32 w-32 bg-zinc-100 dark:bg-zinc-800 sm:h-40 sm:w-40" />
         )}
         <div className="min-w-0 flex-1 text-center sm:text-left">
-          <h1 className="text-2xl font-bold capitalize text-zinc-900 dark:text-zinc-100">
-            {pokemon.name}
-          </h1>
+          <div className="flex items-center justify-between gap-2">
+            <h1 className="text-2xl font-bold capitalize text-zinc-900 dark:text-zinc-100">
+              {pokemon.name}
+            </h1>
+            {isCaught && onRelease && (
+              <button
+                type="button"
+                onClick={onRelease}
+                className="inline-flex items-center justify-center text-red-500 hover:text-red-600 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900"
+                aria-label={`Release ${pokemon.name}`}
+              >
+                <Trash2 className="h-5 w-5" aria-hidden="true" />
+              </button>
+            )}
+          </div>
           <div className="mt-2 flex flex-wrap justify-center gap-1.5 sm:justify-start">
-            {pokemon.types.length
-              ? pokemon.types.map((type) => (
+            {pokemon.types.length ? (
+              pokemon.types.map((type) => {
+                const iconUrl = getTypeIconUrl(type);
+                return iconUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- external sprite URL
+                  <img
+                    key={type}
+                    src={iconUrl}
+                    alt={type}
+                    width={30}
+                    height={30}
+                    className="shrink-0"
+                  />
+                ) : (
                   <span
                     key={type}
-                    className="rounded-full bg-zinc-200 px-2.5 py-0.5 text-sm capitalize text-zinc-800 dark:bg-zinc-700 dark:text-zinc-200"
+                    className="text-sm capitalize text-zinc-500 dark:text-zinc-400"
                   >
                     {type}
                   </span>
-                ))
-              : "—"}
+                );
+              })
+            ) : (
+              <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                —
+              </span>
+            )}
           </div>
           <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-sm">
             <div>
@@ -103,14 +134,13 @@ export function PokemonDetail({
               </div>
             )}
           </dl>
-          {(onCatch || onRelease) && (
+          {!isCaught && onCatch && (
             <div className="mt-4">
               <Button
-                onClick={() =>
-                  isCaught ? onRelease?.() : onCatch?.()
-                }
+                onClick={onCatch}
+                aria-label={`Catch ${pokemon.name}`}
               >
-                {isCaught ? "Release" : "Catch"}
+                Catch
               </Button>
             </div>
           )}

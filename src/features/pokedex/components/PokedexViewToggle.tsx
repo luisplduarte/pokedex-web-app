@@ -22,6 +22,7 @@ export function PokedexViewToggle({ viewMode, setViewMode }: PokedexViewTogglePr
         onClick={() => setViewMode("table")}
         className={`${segmentBase} ${viewMode === "table" ? segmentActive : segmentInactive}`}
         aria-pressed={viewMode === "table"}
+        aria-label="Table view"
       >
         Table
       </button>
@@ -30,6 +31,7 @@ export function PokedexViewToggle({ viewMode, setViewMode }: PokedexViewTogglePr
         onClick={() => setViewMode("grid")}
         className={`${segmentBase} ${viewMode === "grid" ? segmentActive : segmentInactive}`}
         aria-pressed={viewMode === "grid"}
+        aria-label="Grid view"
       >
         Grid
       </button>

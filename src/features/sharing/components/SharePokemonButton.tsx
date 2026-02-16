@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { Button } from "@/components/ui/Button";
+import { Share2 } from "lucide-react";
 import { buildShareablePokemon } from "../utils/sharePayload";
 import { copyToClipboard } from "../utils/copyToClipboard";
 import type { Pokemon } from "@/types/pokemon";
@@ -16,7 +16,6 @@ export interface SharePokemonButtonProps {
   pokemon: Pick<Pokemon, "id" | "name" | "types">;
   note?: string;
   baseUrl?: string;
-  variant?: "primary" | "secondary";
   className?: string;
 }
 
@@ -24,7 +23,6 @@ export function SharePokemonButton({
   pokemon,
   note,
   baseUrl,
-  variant = "secondary",
   className = "",
 }: SharePokemonButtonProps) {
   const [message, setMessage] = useState<"success" | "error" | null>(null);
@@ -70,15 +68,14 @@ export function SharePokemonButton({
 
   return (
     <span className="inline-flex items-center gap-2">
-      <Button
+      <button
         type="button"
-        variant={variant}
         onClick={handleShare}
-        className={className}
+        className={`ml-1 inline-flex cursor-pointer items-center justify-center rounded-none border-none bg-transparent p-1 text-zinc-900 hover:text-zinc-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-zinc-100 dark:hover:text-zinc-300 ${className}`}
         aria-label={`Share ${pokemon.name}`}
       >
-        Share
-      </Button>
+        <Share2 className="h-5 w-5" aria-hidden="true" />
+      </button>
       {message === "success" && (
         <span className="text-sm text-green-600 dark:text-green-400" role="status">
           Copied!

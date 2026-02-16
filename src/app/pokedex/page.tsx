@@ -1,14 +1,15 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { Suspense, useCallback, useMemo, useState } from "react";
 import Link from "next/link";
+import { Download } from "lucide-react";
 import { usePokemonList } from "@/hooks/usePokemonList";
 import { usePokedexStore } from "@/store/pokedexStore";
 import { MainLayout } from "@/components/layouts/MainLayout";
 import { PageHeader } from "@/components/layouts/PageHeader";
 import { Spinner } from "@/components/ui/Spinner";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
-import { Button } from "@/components/ui/Button";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import {
   PokedexTable,
   PokedexCardGrid,
@@ -31,8 +32,10 @@ type ListItem = Pokemon & { caughtAt?: string };
 
 const LIST_LIMIT = 151;
 
-export default function PokedexPage() {
-  const { data: allPokemon = [], isLoading, error } = usePokemonList(LIST_LIMIT);
+function PokedexContent() {
+  const { data, isLoading, error } = usePokemonList(LIST_LIMIT);
+  const allPokemon = data?.pokemon ?? [];
+  const totalFromApi = data?.total;
   const caughtIds = usePokedexStore((s) => s.caughtIds);
   const caughtAt = usePokedexStore((s) => s.caughtAt);
   const getNote = usePokedexStore((s) => s.getNote);
@@ -41,6 +44,7 @@ export default function PokedexPage() {
   const filters = useFilters();
   const { nameQuery, selectedTypes, sortKey, sortDir } = filters;
   const { viewMode, setViewMode } = usePokedexViewMode();
+  const [confirmExportOpen, setConfirmExportOpen] = useState(false);
 
   const caughtPokemon = useMemo(
     () => allPokemon.filter((p) => caughtIds.has(p.id)),
@@ -60,6 +64,8 @@ export default function PokedexPage() {
       name: p.name,
       imageUrl: p.imageUrl,
       types: p.types,
+      height: p.height,
+      weight: p.weight,
       caughtAt: caughtAt[p.id],
       note: getNote(p.id),
     }));
@@ -73,6 +79,8 @@ export default function PokedexPage() {
       id: p.id,
       name: p.name,
       types: p.types,
+      height: p.height,
+      weight: p.weight,
       caughtAt: caughtAt[p.id],
       note: getNote(p.id),
     }));
@@ -83,17 +91,19 @@ export default function PokedexPage() {
 
   return (
     <MainLayout>
-      <PageHeader title="My Pokédex">
-        <div className="flex flex-wrap items-center gap-3">
-          <PokedexProgress />
-          <Button
+      <header className="mb-6">
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
+            My Pokédex
+          </h1>
+          <button
             type="button"
-            variant="secondary"
-            onClick={handleExportCsv}
+            onClick={() => setConfirmExportOpen(true)}
             aria-label="Export Pokédex as CSV"
+            className="ml-1 inline-flex cursor-pointer items-center justify-center rounded-none border-none bg-transparent p-1 text-zinc-900 hover:text-zinc-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-zinc-100 dark:hover:text-zinc-300"
           >
-            Export CSV
-          </Button>
+            <Download className="h-5 w-5" aria-hidden="true" />
+          </button>
         </div>
         <Link
           href="/"
@@ -101,7 +111,25 @@ export default function PokedexPage() {
         >
           ← Back to all Pokémon
         </Link>
-      </PageHeader>
+      </header>
+      <ConfirmDialog
+        open={confirmExportOpen}
+        title="Export Pokédex"
+        description="Do you want to download your Pokédex as a CSV file?"
+        confirmLabel="Export"
+        cancelLabel="Cancel"
+        confirmTone="primary"
+        onConfirm={() => {
+          handleExportCsv();
+          setConfirmExportOpen(false);
+        }}
+        onCancel={() => setConfirmExportOpen(false)}
+      />
+      {totalFromApi != null && (
+        <div className="mt-4 flex justify-center">
+          <PokedexProgress total={totalFromApi} />
+        </div>
+      )}
       {isLoading && (
         <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
           <Spinner />
@@ -126,10 +154,9 @@ export default function PokedexPage() {
       )}
       {!isLoading && !error && !noCaught && caughtPokemon.length > 0 && (
         <>
-          <div className="flex flex-wrap items-center gap-4">
-            <FilterBar {...filters} />
+          <FilterBar {...filters}>
             <PokedexViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-          </div>
+          </FilterBar>
           {viewMode === "table" ? (
             <PokedexTable data={tableRows} onRemove={removeCaught} />
           ) : (
@@ -138,5 +165,30 @@ export default function PokedexPage() {
         </>
       )}
     </MainLayout>
+  );
+}
+
+export default function PokedexPage() {
+  return (
+    <Suspense
+      fallback={
+        <MainLayout>
+          <PageHeader title="My Pokédex">
+            <Link
+              href="/"
+              className="mt-2 inline-block text-sm text-blue-600 hover:underline dark:text-blue-400"
+            >
+              ← Back to all Pokémon
+            </Link>
+          </PageHeader>
+          <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
+            <Spinner />
+            <span>Loading…</span>
+          </div>
+        </MainLayout>
+      }
+    >
+      <PokedexContent />
+    </Suspense>
   );
 }

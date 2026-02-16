@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import { Suspense, useMemo } from "react";
 import Link from "next/link";
-import { usePokemonList } from "@/hooks/usePokemonList";
+import { usePokemonListInfinite } from "@/hooks/usePokemonList";
 import { usePokedexStore } from "@/store/pokedexStore";
 import { MainLayout } from "@/components/layouts/MainLayout";
 import { PageHeader } from "@/components/layouts/PageHeader";
+import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { PokemonList } from "@/features/pokemon";
@@ -19,8 +20,15 @@ import type { Pokemon } from "@/types/pokemon";
 
 type ListItem = Pokemon & { caughtAt?: string };
 
-export default function Home() {
-  const { data: pokemon = [], isLoading: loading, error } = usePokemonList(20);
+function HomeContent() {
+  const {
+    pokemon,
+    isLoading: loading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = usePokemonListInfinite();
   const caughtIds = usePokedexStore((s) => s.caughtIds);
   const caughtAt = usePokedexStore((s) => s.caughtAt);
   const addCaught = usePokedexStore((s) => s.addCaught);
@@ -67,6 +75,9 @@ export default function Home() {
           }
         />
       )}
+      {!loading && !error && pokemon.length === 0 && (
+        <p className="text-zinc-600 dark:text-zinc-400">No Pokémon found.</p>
+      )}
       {!loading && !error && pokemon.length > 0 && (
         <>
           <FilterBar {...filters} />
@@ -75,8 +86,53 @@ export default function Home() {
             caughtIds={caughtIds}
             onToggleCaught={toggleCaught}
           />
+          {hasNextPage && (
+            <div className="mt-6 flex justify-center">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
+                className="flex items-center gap-2"
+              >
+                {isFetchingNextPage ? (
+                  <>
+                    <Spinner />
+                    Loading…
+                  </>
+                ) : (
+                  "Load more"
+                )}
+              </Button>
+            </div>
+          )}
         </>
       )}
     </MainLayout>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense
+      fallback={
+        <MainLayout>
+          <PageHeader title="Pokémon">
+            <Link
+              href="/pokedex"
+              className="mt-2 inline-block text-sm text-blue-600 hover:underline dark:text-blue-400"
+            >
+              My Pokédex →
+            </Link>
+          </PageHeader>
+          <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
+            <Spinner />
+            <span>Loading…</span>
+          </div>
+        </MainLayout>
+      }
+    >
+      <HomeContent />
+    </Suspense>
   );
 }

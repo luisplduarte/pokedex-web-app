@@ -12,6 +12,50 @@ function resetStore() {
   usePokedexStore.getState().hydrate();
 }
 
+describe("pokedexStore add/remove", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    resetStore();
+  });
+
+  it("addCaught adds id and persists via storage.save", () => {
+    usePokedexStore.getState().addCaught(1);
+    expect(usePokedexStore.getState().caughtIds.has(1)).toBe(true);
+    expect(storage.save).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        caught: expect.arrayContaining([
+          expect.objectContaining({ pokemonId: 1, caughtAt: expect.any(String) }),
+        ]),
+      })
+    );
+  });
+
+  it("removeCaught removes id and clears note, persists", () => {
+    usePokedexStore.getState().addCaught(2);
+    usePokedexStore.getState().setNote(2, "note");
+    usePokedexStore.getState().removeCaught(2);
+    expect(usePokedexStore.getState().caughtIds.has(2)).toBe(false);
+    expect(usePokedexStore.getState().getNote(2)).toBe("");
+    expect(storage.save).toHaveBeenLastCalledWith(
+      expect.objectContaining({ caught: [] })
+    );
+  });
+
+  it("hydrate restores caught list from persisted state", () => {
+    vi.mocked(storage.load).mockReturnValue({
+      caught: [
+        { pokemonId: 10, caughtAt: "2025-01-01T00:00:00Z" },
+        { pokemonId: 20, caughtAt: "2025-01-02T00:00:00Z" },
+      ],
+      notes: {},
+    });
+    usePokedexStore.getState().hydrate();
+    expect(usePokedexStore.getState().caughtIds.has(10)).toBe(true);
+    expect(usePokedexStore.getState().caughtIds.has(20)).toBe(true);
+    expect(usePokedexStore.getState().caughtAt[10]).toBe("2025-01-01T00:00:00Z");
+  });
+});
+
 describe("pokedexStore notes", () => {
   beforeEach(() => {
     vi.clearAllMocks();

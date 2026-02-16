@@ -1,5 +1,6 @@
-"use client";
+ "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import {
   useReactTable,
@@ -8,6 +9,9 @@ import {
   createColumnHelper,
 } from "@tanstack/react-table";
 import { Button } from "@/components/ui/Button";
+import { getTypeIconUrl } from "@/features/filters/typeIcons";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { Eye, Trash2 } from "lucide-react";
 
 /** Row shape for the Pokédex table (list item + caught/note data) */
 export interface PokedexTableRow {
@@ -53,13 +57,15 @@ function formatWeight(hg?: number): string {
 }
 
 export function PokedexTable({ data, onRemove }: PokedexTableProps) {
+  const [confirmingId, setConfirmingId] = useState<number | null>(null);
+
   const columns = [
     columnHelper.accessor("name", {
       header: "Name",
       cell: ({ row }) => (
         <Link
           href={`/pokemon/${row.original.id}`}
-          className="font-medium capitalize text-blue-600 hover:underline dark:text-blue-400"
+          className="font-medium capitalize text-white hover:underline dark:text-white"
         >
           {row.original.name}
         </Link>
@@ -83,12 +89,36 @@ export function PokedexTable({ data, onRemove }: PokedexTableProps) {
       header: "Types",
       cell: ({ getValue }) => {
         const types = getValue();
-        return types?.length ? (
-          <span className="text-sm text-zinc-600 dark:text-zinc-400">
-            {types.join(", ")}
-          </span>
-        ) : (
-          "—"
+
+        if (!types?.length) {
+          return "—";
+        }
+
+        return (
+          <div className="flex flex-wrap items-center gap-1.5">
+            {types.map((type: string) => {
+              const iconUrl = getTypeIconUrl(type);
+
+              return iconUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element -- external sprite URL
+                <img
+                  key={type}
+                  src={iconUrl}
+                  alt={type}
+                  width={30}
+                  height={30}
+                  className="shrink-0"
+                />
+              ) : (
+                <span
+                  key={type}
+                  className="text-sm capitalize text-zinc-500 dark:text-zinc-400"
+                >
+                  {type}
+                </span>
+              );
+            })}
+          </div>
         );
       },
     }),
@@ -104,39 +134,54 @@ export function PokedexTable({ data, onRemove }: PokedexTableProps) {
       header: "Caught at",
       cell: ({ row }) => formatCaughtAt(row.original.caughtAt),
     }),
-    columnHelper.accessor("note", {
-      header: "Note",
-      cell: ({ row }) => {
-        const note = row.original.note?.trim();
-        return note ? (
-          <span className="max-w-[12rem] truncate block text-sm" title={note}>
-            {note}
-          </span>
-        ) : (
-          "—"
-        );
-      },
-    }),
     columnHelper.display({
       id: "actions",
       header: "Actions",
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <Link
-            href={`/pokemon/${row.original.id}`}
-            className="text-sm text-blue-600 hover:underline dark:text-blue-400"
-          >
-            View
-          </Link>
-          <Button
-            variant="secondary"
-            onClick={() => onRemove(row.original.id)}
-            aria-label={`Release ${row.original.name}`}
-          >
-            Release
-          </Button>
-        </div>
-      ),
+      cell: ({ row }) => {
+        const isConfirming = confirmingId === row.original.id;
+
+        return (
+          <>
+            <div className="flex items-center gap-2">
+              <Link
+                href={`/pokemon/${row.original.id}`}
+                className="inline-flex items-center justify-center rounded-md p-1 text-white hover:bg-blue-50 hover:text-white dark:text-white dark:hover:bg-zinc-800"
+                aria-label={`View details for ${row.original.name}`}
+              >
+                <Eye className="h-4 w-4" aria-hidden="true" />
+              </Link>
+              <button
+                type="button"
+                onClick={() => setConfirmingId(row.original.id)}
+                className="inline-flex items-center justify-center text-red-500 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-50 dark:focus-visible:ring-offset-zinc-900"
+                aria-label={`Remove ${row.original.name} from Pokédex`}
+              >
+                <Trash2 className="h-5 w-5" aria-hidden="true" />
+              </button>
+            </div>
+            <ConfirmDialog
+              open={isConfirming}
+              title="Release from Pokédex"
+              description={
+                <span>
+                  Are you sure you want to release{" "}
+                  <span className="font-semibold capitalize">
+                    {row.original.name}
+                  </span>{" "}
+                  from your Pokédex?
+                </span>
+              }
+              confirmLabel="Release"
+              cancelLabel="Cancel"
+              onConfirm={() => {
+                onRemove(row.original.id);
+                setConfirmingId(null);
+              }}
+              onCancel={() => setConfirmingId(null)}
+            />
+          </>
+        );
+      },
     }),
   ];
 
@@ -155,6 +200,7 @@ export function PokedexTable({ data, onRemove }: PokedexTableProps) {
               {headerGroup.headers.map((header) => (
                 <th
                   key={header.id}
+                  scope="col"
                   className="px-3 py-2 font-medium text-zinc-700 dark:text-zinc-300"
                 >
                   {header.isPlaceholder

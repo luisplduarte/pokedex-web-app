@@ -16,8 +16,8 @@ const CSV_HEADERS = [
   "Id",
   "Name",
   "Types",
-  "Height",
-  "Weight",
+  "Height (m)",
+  "Weight (kg)",
   "Caught At",
   "Note",
 ] as const;
@@ -46,12 +46,17 @@ function escapeCsvField(value: string): string {
 }
 
 function rowToCells(row: CsvExportRow): string[] {
+  const heightInMeters =
+    row.height != null ? (row.height / 10).toFixed(1) : "";
+  const weightInKilograms =
+    row.weight != null ? (row.weight / 10).toFixed(1) : "";
+
   return [
     String(row.id),
     row.name,
     row.types.join(", "),
-    row.height != null ? String(row.height) : "",
-    row.weight != null ? String(row.weight) : "",
+    heightInMeters,
+    weightInKilograms,
     row.caughtAt != null ? formatCaughtAt(row.caughtAt) : "",
     row.note ?? "",
   ];

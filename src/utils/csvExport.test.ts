@@ -28,7 +28,7 @@ describe("buildCsv", () => {
     const lines = out.split("\n");
     expect(lines).toHaveLength(2);
     expect(lines[1]).toBe(
-      "1,bulbasaur,\"grass, poison\",7,69,2025/02/01 12:00:00,First catch"
+      "1,bulbasaur,\"grass, poison\",0.7,6.9,2025/02/01 12:00:00,First catch"
     );
   });
 

@@ -39,6 +39,7 @@ export default function PokemonDetailPage() {
               }
             }}
             className="inline-block text-left text-sm text-blue-600 hover:underline dark:text-blue-400"
+            aria-label="Back to list"
           >
             ← Back to list
           </button>
