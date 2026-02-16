@@ -8,6 +8,7 @@ export interface PokedexStoreState {
   notes: Record<number, string>;
   addCaught: (id: number, caughtAt?: string) => void;
   removeCaught: (id: number) => void;
+  removeMany: (ids: number[]) => void;
   setNote: (id: number, text: string) => void;
   getNote: (id: number) => string;
   hydrate: () => void;
@@ -56,6 +57,20 @@ export const usePokedexStore = create<PokedexStoreState>()((set, get) => ({
       delete nextCaughtAt[id];
       const nextNotes = { ...state.notes };
       delete nextNotes[id];
+      return { caughtIds: nextIds, caughtAt: nextCaughtAt, notes: nextNotes };
+    });
+  },
+
+  removeMany: (ids) => {
+    set((state) => {
+      const nextIds = new Set(state.caughtIds);
+      const nextCaughtAt = { ...state.caughtAt };
+      const nextNotes = { ...state.notes };
+      for (const id of ids) {
+        nextIds.delete(id);
+        delete nextCaughtAt[id];
+        delete nextNotes[id];
+      }
       return { caughtIds: nextIds, caughtAt: nextCaughtAt, notes: nextNotes };
     });
   },

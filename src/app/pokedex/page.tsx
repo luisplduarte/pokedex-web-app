@@ -42,6 +42,7 @@ function PokedexContent() {
   const caughtAt = usePokedexStore((s) => s.caughtAt);
   const getNote = usePokedexStore((s) => s.getNote);
   const removeCaught = usePokedexStore((s) => s.removeCaught);
+  const removeMany = usePokedexStore((s) => s.removeMany);
 
   const filters = useFilters();
   const {
@@ -183,9 +184,9 @@ function PokedexContent() {
             <PokedexViewToggle viewMode={viewMode} setViewMode={setViewMode} />
           </FilterBar>
           {viewMode === "table" ? (
-            <PokedexTable data={tableRows} onRemove={removeCaught} />
+            <PokedexTable data={tableRows} onRemove={removeCaught} onRemoveMany={removeMany} />
           ) : (
-            <PokedexCardGrid data={tableRows} onRemove={removeCaught} />
+            <PokedexCardGrid data={tableRows} onRemove={removeCaught} onRemoveMany={removeMany} />
           )}
         </>
       )}
