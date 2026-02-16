@@ -1,4 +1,4 @@
-import type { PokemonDetail } from "@/types/pokemon";
+import type { CachedPokemon, PokemonDetail } from "@/types/pokemon";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { getTypeIconUrl } from "@/features/filters/typeIcons";
@@ -6,13 +6,16 @@ import { Trash2 } from "lucide-react";
 import { SharePokemonButton } from "@/features/sharing";
 
 interface PokemonDetailProps {
-  pokemon: PokemonDetail;
+  /** Full detail or cached (stats optional when offline). */
+  pokemon: PokemonDetail | CachedPokemon;
   /** When true, show "Caught at {date}" and allow release. */
   isCaught?: boolean;
   caughtAt?: string;
   onCatch?: () => void;
   onRelease?: () => void;
   shareNote?: string;
+  /** When true, show a short note that data is from saved cache (e.g. offline). */
+  isFromCache?: boolean;
 }
 
 const heightInM = (dm: number) => dm / 10;
@@ -45,14 +48,26 @@ export function PokemonDetail({
   onCatch,
   onRelease,
   shareNote,
+  isFromCache = false,
 }: PokemonDetailProps) {
-  const statsEntries = Object.entries(pokemon.stats) as [
-    keyof PokemonDetail["stats"],
-    number
-  ][];
+  const stats = "stats" in pokemon ? pokemon.stats : undefined;
+  const hasStats = stats != null;
+  const statsEntries = hasStats
+    ? (Object.entries(stats) as [keyof PokemonDetail["stats"], number][])
+    : [];
+  const height = pokemon.height ?? 0;
+  const weight = pokemon.weight ?? 0;
 
   return (
     <div className="space-y-4">
+      {isFromCache && (
+        <p
+          className="rounded bg-amber-100 px-3 py-2 text-sm text-amber-900 dark:bg-amber-900/40 dark:text-amber-200"
+          role="status"
+        >
+          Showing saved data — you may be offline.
+        </p>
+      )}
       <Card className="flex flex-col items-center gap-4 p-6 sm:flex-row sm:items-start">
         {pokemon.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element -- external API URL
@@ -122,7 +137,7 @@ export function PokemonDetail({
                 Height:{" "}
               </dt>
               <dd className="inline text-zinc-900 dark:text-zinc-100">
-                {heightInM(pokemon.height)} m
+                {height > 0 ? `${heightInM(height)} m` : "—"}
               </dd>
             </div>
             <div>
@@ -130,7 +145,7 @@ export function PokemonDetail({
                 Weight:{" "}
               </dt>
               <dd className="inline text-zinc-900 dark:text-zinc-100">
-                {weightInKg(pokemon.weight)} kg
+                {weight > 0 ? `${weightInKg(weight)} kg` : "—"}
               </dd>
             </div>
             {isCaught && caughtAt && (
@@ -161,21 +176,27 @@ export function PokemonDetail({
         <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
           Base stats
         </h2>
-        <dl className="space-y-2">
-          {statsEntries.map(([key, value]) => (
-            <div
-              key={key}
-              className="flex items-center justify-between gap-4 text-sm"
-            >
-              <dt className="text-zinc-600 dark:text-zinc-400">
-                {STAT_LABELS[key]}
-              </dt>
-              <dd className="font-medium text-zinc-900 dark:text-zinc-100">
-                {value}
-              </dd>
-            </div>
-          ))}
-        </dl>
+        {hasStats && statsEntries.length > 0 ? (
+          <dl className="space-y-2">
+            {statsEntries.map(([key, value]) => (
+              <div
+                key={key}
+                className="flex items-center justify-between gap-4 text-sm"
+              >
+                <dt className="text-zinc-600 dark:text-zinc-400">
+                  {STAT_LABELS[key]}
+                </dt>
+                <dd className="font-medium text-zinc-900 dark:text-zinc-100">
+                  {value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        ) : (
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            Not available (saved data only).
+          </p>
+        )}
       </Card>
     </div>
   );

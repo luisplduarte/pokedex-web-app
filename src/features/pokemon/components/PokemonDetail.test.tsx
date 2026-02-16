@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { PokemonDetail } from "./PokemonDetail";
-import type { PokemonDetail as PokemonDetailType } from "@/types/pokemon";
+import type { CachedPokemon, PokemonDetail as PokemonDetailType } from "@/types/pokemon";
 
 const mockPokemon: PokemonDetailType = {
   id: 1,
@@ -93,5 +93,28 @@ describe("PokemonDetail", () => {
     fireEvent.click(screen.getByRole("button", { name: /release/i }));
 
     expect(onRelease).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows offline banner when isFromCache is true", () => {
+    render(<PokemonDetail pokemon={mockPokemon} isFromCache />);
+
+    expect(screen.getByText(/Showing saved data/)).toBeInTheDocument();
+  });
+
+  it("renders cached pokemon without stats", () => {
+    const cached: CachedPokemon = {
+      id: 2,
+      name: "ivysaur",
+      imageUrl: "https://example.com/2.png",
+      types: ["grass", "poison"],
+      height: 10,
+      weight: 130,
+    };
+    render(<PokemonDetail pokemon={cached} />);
+
+    expect(screen.getByText("ivysaur")).toBeInTheDocument();
+    expect(screen.getByText(/1 m/)).toBeInTheDocument();
+    expect(screen.getByText(/13 kg/)).toBeInTheDocument();
+    expect(screen.getByText(/Not available \(saved data only\)/)).toBeInTheDocument();
   });
 });

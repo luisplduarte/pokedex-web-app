@@ -21,3 +21,6 @@ export interface PokemonDetail extends Pokemon {
     speed: number;
   };
 }
+
+/** Cached Pokémon data for offline use; stats optional when only list data was saved */
+export type CachedPokemon = Pokemon & { stats?: PokemonDetail["stats"] };
