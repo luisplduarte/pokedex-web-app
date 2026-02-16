@@ -124,9 +124,32 @@ export function PokedexTable({ data, onRemove }: PokedexTableProps) {
         <div className="flex items-center gap-2">
           <Link
             href={`/pokemon/${row.original.id}`}
-            className="text-sm text-blue-600 hover:underline dark:text-blue-400"
+            className="inline-flex items-center justify-center rounded-md p-1 text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:text-blue-400 dark:hover:bg-zinc-800"
+            aria-label={`View details for ${row.original.name}`}
           >
-            View
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <path
+                d="M1.5 8s2.25-4.5 6.5-4.5S14.5 8 14.5 8s-2.25 4.5-6.5 4.5S1.5 8 1.5 8Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <circle
+                cx="8"
+                cy="8"
+                r="2"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+            </svg>
           </Link>
           <Button
             variant="secondary"

@@ -40,6 +40,8 @@ function mapDetailToPokemon(detail: PokemonDetailApiResponse): Pokemon {
     name: detail.name,
     imageUrl: detail.sprites.front_default ?? null,
     types: detail.types.map((t) => t.type.name),
+    height: detail.height,
+    weight: detail.weight,
   };
 }
 

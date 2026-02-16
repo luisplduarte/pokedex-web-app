@@ -60,6 +60,8 @@ function PokedexContent() {
       name: p.name,
       imageUrl: p.imageUrl,
       types: p.types,
+      height: p.height,
+      weight: p.weight,
       caughtAt: caughtAt[p.id],
       note: getNote(p.id),
     }));

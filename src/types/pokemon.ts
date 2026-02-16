@@ -4,6 +4,8 @@ export interface Pokemon {
   name: string;
   imageUrl: string | null;
   types: string[];
+  height?: number;
+  weight?: number;
 }
 
 /** Full detail for Pokémon detail page; extends list item with height, weight, stats */
