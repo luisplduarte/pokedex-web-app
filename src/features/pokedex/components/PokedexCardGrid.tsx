@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { getTypeIconUrl } from "@/features/filters/typeIcons";
 import { Trash2 } from "lucide-react";
@@ -34,6 +33,7 @@ function formatWeight(hg?: number): string {
 interface PokedexCardGridProps {
   data: PokedexTableRow[];
   onRemove: (id: number) => void;
+  onRemoveMany?: (ids: number[]) => void;
 }
 
 interface PokedexCardRemoveProps {
@@ -77,92 +77,159 @@ function PokedexCardRemove({ id, name, onRemove }: PokedexCardRemoveProps) {
   );
 }
 
-export function PokedexCardGrid({ data, onRemove }: PokedexCardGridProps) {
+export function PokedexCardGrid({ data, onRemove, onRemoveMany }: PokedexCardGridProps) {
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [confirmingBulk, setConfirmingBulk] = useState(false);
+
+  const handleSelectCard = (id: number) => {
+    const next = new Set(selectedIds);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    setSelectedIds(next);
+  };
+
+  const handleRemoveSelected = () => {
+    if (onRemoveMany && selectedIds.size > 0) {
+      onRemoveMany(Array.from(selectedIds));
+      setSelectedIds(new Set());
+    }
+  };
+
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {data.map((row) => (
-        <Card key={row.id} className="p-4">
-          <div className="flex flex-col gap-3">
-            <div className="flex items-start gap-3">
-              <div className="h-16 w-16 shrink-0 overflow-hidden rounded">
-                {row.imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- external API URL
-                  <img
-                    src={row.imageUrl}
-                    alt=""
-                    className="h-full w-full object-contain"
-                  />
-                ) : (
-                  <div className="h-full w-full" aria-hidden />
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="flex-1 font-medium capitalize text-zinc-900 dark:text-zinc-100">
-                    <Link
-                      href={`/pokemon/${row.id}`}
-                      className="text-white hover:underline dark:text-white"
-                    >
-                      {row.name}
-                    </Link>
-                  </p>
-                  <PokedexCardRemove
-                    id={row.id}
-                    name={row.name}
-                    onRemove={onRemove}
-                  />
-                </div>
-                <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                  {row.types?.length ? (
-                    row.types.map((type) => {
-                      const iconUrl = getTypeIconUrl(type);
-                      return iconUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element -- external sprite URL
-                        <img
-                          key={type}
-                          src={iconUrl}
-                          alt={type}
-                          width={30}
-                          height={30}
-                          className="shrink-0"
-                        />
-                      ) : (
-                        <span
-                          key={type}
-                          className="text-sm capitalize text-zinc-500 dark:text-zinc-400"
-                        >
-                          {type}
-                        </span>
-                      );
-                    })
+    <div className="space-y-4">
+      {onRemoveMany && selectedIds.size > 0 && (
+        <div className="flex items-center justify-between rounded-md border border-zinc-200 bg-zinc-50 px-4 py-2 dark:border-zinc-700 dark:bg-zinc-800/50">
+          <span className="text-sm text-zinc-700 dark:text-zinc-300">
+            {selectedIds.size} Pokémon selected
+          </span>
+          <button
+            type="button"
+            onClick={() => setConfirmingBulk(true)}
+            className="shrink-0 cursor-pointer rounded-md border border-red-500 bg-red-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:bg-red-600 dark:hover:bg-red-700 dark:focus-visible:ring-offset-zinc-900"
+          >
+            Release selected
+          </button>
+          <ConfirmDialog
+            open={confirmingBulk}
+            title="Release selected Pokémon"
+            description={
+              <span>
+                Are you sure you want to release {selectedIds.size} Pokémon from
+                your Pokédex?
+              </span>
+            }
+            confirmLabel="Release"
+            cancelLabel="Cancel"
+            onConfirm={() => {
+              handleRemoveSelected();
+              setConfirmingBulk(false);
+            }}
+            onCancel={() => setConfirmingBulk(false)}
+          />
+        </div>
+      )}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {data.map((row) => (
+          <Card
+            key={row.id}
+            className={`p-4 ${selectedIds.has(row.id) ? "ring-2 ring-blue-500" : ""}`}
+          >
+            <div className="flex flex-col gap-3">
+              <div className="flex items-start gap-3">
+                <div className="h-16 w-16 shrink-0 overflow-hidden rounded">
+                  {row.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- external API URL
+                    <img
+                      src={row.imageUrl}
+                      alt=""
+                      className="h-full w-full object-contain"
+                    />
                   ) : (
-                    <span className="text-sm text-zinc-500 dark:text-zinc-400">
-                      —
-                    </span>
+                    <div className="h-full w-full" aria-hidden />
                   )}
                 </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="flex-1 font-medium capitalize text-zinc-900 dark:text-zinc-100">
+                      <Link
+                        href={`/pokemon/${row.id}`}
+                        className="text-white hover:underline dark:text-white"
+                      >
+                        {row.name}
+                      </Link>
+                    </p>
+                    <div className="flex items-center gap-2">
+                      {onRemoveMany && (
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(row.id)}
+                          onChange={() => handleSelectCard(row.id)}
+                          aria-label={`Select ${row.name}`}
+                          className="h-4 w-4 cursor-pointer rounded border-zinc-300 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-zinc-600"
+                        />
+                      )}
+                      <PokedexCardRemove
+                        id={row.id}
+                        name={row.name}
+                        onRemove={onRemove}
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                    {row.types?.length ? (
+                      row.types.map((type) => {
+                        const iconUrl = getTypeIconUrl(type);
+                        return iconUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element -- external sprite URL
+                          <img
+                            key={type}
+                            src={iconUrl}
+                            alt={type}
+                            width={30}
+                            height={30}
+                            className="shrink-0"
+                          />
+                        ) : (
+                          <span
+                            key={type}
+                            className="text-sm capitalize text-zinc-500 dark:text-zinc-400"
+                          >
+                            {type}
+                          </span>
+                        );
+                      })
+                    ) : (
+                      <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                        —
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
+
+              <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
+                <dt className="text-zinc-500 dark:text-zinc-400">Height</dt>
+                <dd>{formatHeight(row.height)}</dd>
+                <dt className="text-zinc-500 dark:text-zinc-400">Weight</dt>
+                <dd>{formatWeight(row.weight)}</dd>
+                <dt className="text-zinc-500 dark:text-zinc-400">Caught at</dt>
+                <dd>{formatCaughtAt(row.caughtAt)}</dd>
+              </dl>
+
+              {row.note?.trim() && (
+                <div className="border-t border-zinc-100 pt-2 dark:border-zinc-800">
+                  <p className="text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2" title={row.note.trim()}>
+                    {row.note.trim()}
+                  </p>
+                </div>
+              )}
             </div>
-
-            <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
-              <dt className="text-zinc-500 dark:text-zinc-400">Height</dt>
-              <dd>{formatHeight(row.height)}</dd>
-              <dt className="text-zinc-500 dark:text-zinc-400">Weight</dt>
-              <dd>{formatWeight(row.weight)}</dd>
-              <dt className="text-zinc-500 dark:text-zinc-400">Caught at</dt>
-              <dd>{formatCaughtAt(row.caughtAt)}</dd>
-            </dl>
-
-            {row.note?.trim() && (
-              <div className="border-t border-zinc-100 pt-2 dark:border-zinc-800">
-                <p className="text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2" title={row.note.trim()}>
-                  {row.note.trim()}
-                </p>
-              </div>
-            )}
-          </div>
-        </Card>
-      ))}
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }

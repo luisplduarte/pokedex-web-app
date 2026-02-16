@@ -8,7 +8,6 @@ import {
   flexRender,
   createColumnHelper,
 } from "@tanstack/react-table";
-import { Button } from "@/components/ui/Button";
 import { getTypeIconUrl } from "@/features/filters/typeIcons";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Eye, Trash2 } from "lucide-react";
@@ -28,6 +27,7 @@ export interface PokedexTableRow {
 interface PokedexTableProps {
   data: PokedexTableRow[];
   onRemove: (id: number) => void;
+  onRemoveMany?: (ids: number[]) => void;
 }
 
 const columnHelper = createColumnHelper<PokedexTableRow>();
@@ -56,10 +56,68 @@ function formatWeight(hg?: number): string {
   return `${(hg / 10).toFixed(1)} kg`;
 }
 
-export function PokedexTable({ data, onRemove }: PokedexTableProps) {
+export function PokedexTable({ data, onRemove, onRemoveMany }: PokedexTableProps) {
   const [confirmingId, setConfirmingId] = useState<number | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [confirmingBulk, setConfirmingBulk] = useState(false);
+
+  const allSelected = data.length > 0 && selectedIds.size === data.length;
+  const someSelected = selectedIds.size > 0 && selectedIds.size < data.length;
+
+  const handleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(data.map((row) => row.id)));
+    }
+  };
+
+  const handleSelectRow = (id: number) => {
+    const next = new Set(selectedIds);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    setSelectedIds(next);
+  };
+
+  const handleRemoveSelected = () => {
+    if (onRemoveMany && selectedIds.size > 0) {
+      onRemoveMany(Array.from(selectedIds));
+      setSelectedIds(new Set());
+    }
+  };
 
   const columns = [
+    ...(onRemoveMany
+      ? [
+          columnHelper.display({
+            id: "select",
+            header: () => (
+              <input
+                type="checkbox"
+                checked={allSelected}
+                ref={(el) => {
+                  if (el) el.indeterminate = someSelected;
+                }}
+                onChange={handleSelectAll}
+                aria-label="Select all Pokémon"
+                className="h-4 w-4 cursor-pointer rounded border-zinc-300 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-zinc-600"
+              />
+            ),
+            cell: ({ row }) => (
+              <input
+                type="checkbox"
+                checked={selectedIds.has(row.original.id)}
+                onChange={() => handleSelectRow(row.original.id)}
+                aria-label={`Select ${row.original.name}`}
+                className="h-4 w-4 cursor-pointer rounded border-zinc-300 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-zinc-600"
+              />
+            ),
+          }),
+        ]
+      : []),
     columnHelper.accessor("name", {
       header: "Name",
       cell: ({ row }) => (
@@ -192,8 +250,40 @@ export function PokedexTable({ data, onRemove }: PokedexTableProps) {
   });
 
   return (
-    <div className="overflow-x-auto rounded-md border border-zinc-200 dark:border-zinc-700">
-      <table className="w-full min-w-[640px] border-collapse text-left text-sm">
+    <div className="space-y-2">
+      {onRemoveMany && selectedIds.size > 0 && (
+        <div className="flex items-center justify-between rounded-md border border-zinc-200 bg-zinc-50 px-4 py-2 dark:border-zinc-700 dark:bg-zinc-800/50">
+          <span className="text-sm text-zinc-700 dark:text-zinc-300">
+            {selectedIds.size} Pokémon selected
+          </span>
+          <button
+            type="button"
+            onClick={() => setConfirmingBulk(true)}
+            className="shrink-0 cursor-pointer rounded-md border border-red-500 bg-red-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:bg-red-600 dark:hover:bg-red-700 dark:focus-visible:ring-offset-zinc-900"
+          >
+            Release selected
+          </button>
+          <ConfirmDialog
+            open={confirmingBulk}
+            title="Release selected Pokémon"
+            description={
+              <span>
+                Are you sure you want to release {selectedIds.size} Pokémon from
+                your Pokédex?
+              </span>
+            }
+            confirmLabel="Release"
+            cancelLabel="Cancel"
+            onConfirm={() => {
+              handleRemoveSelected();
+              setConfirmingBulk(false);
+            }}
+            onCancel={() => setConfirmingBulk(false)}
+          />
+        </div>
+      )}
+      <div className="overflow-x-auto rounded-md border border-zinc-200 dark:border-zinc-700">
+        <table className="w-full min-w-[640px] border-collapse text-left text-sm">
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id} className="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800/50">
@@ -235,6 +325,7 @@ export function PokedexTable({ data, onRemove }: PokedexTableProps) {
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }
