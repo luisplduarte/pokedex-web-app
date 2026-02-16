@@ -271,6 +271,76 @@ describe("sortBy", () => {
     expect(result[0].name).toBe("ivysaur");
   });
 
+  it("sorts by height asc", () => {
+    const result = sortBy(list, "height", "asc");
+    expect(result.map((x) => x.name)).toEqual([
+      "pikachu", // 0.4 m
+      "charmander", // 0.6 m
+      "bulbasaur", // 0.7 m
+      "ivysaur", // 1.0 m
+      "charizard", // 1.7 m
+    ]);
+  });
+
+  it("sorts by height desc", () => {
+    const result = sortBy(list, "height", "desc");
+    expect(result.map((x) => x.name)).toEqual([
+      "charizard", // 1.7 m
+      "ivysaur", // 1.0 m
+      "bulbasaur", // 0.7 m
+      "charmander", // 0.6 m
+      "pikachu", // 0.4 m
+    ]);
+  });
+
+  it("treats missing height as 0 and uses name as tiebreaker", () => {
+    const { height: _, ...ivysaurWithoutHeight } = list[1];
+    const withMissing: FilterSortItem[] = [
+      { ...list[0], height: 7 }, // bulbasaur
+      ivysaurWithoutHeight, // ivysaur, no height (treated as 0)
+      { ...list[2], height: 17 }, // charizard
+    ];
+    const result = sortBy(withMissing, "height", "asc");
+    expect(result[0].name).toBe("ivysaur"); // missing height = 0, comes first
+    expect(result[1].name).toBe("bulbasaur"); // height 7
+    expect(result[2].name).toBe("charizard"); // height 17
+  });
+
+  it("sorts by weight asc", () => {
+    const result = sortBy(list, "weight", "asc");
+    expect(result.map((x) => x.name)).toEqual([
+      "pikachu", // 6.0 kg (60 hg)
+      "bulbasaur", // 6.9 kg (69 hg)
+      "charmander", // 8.5 kg (85 hg)
+      "ivysaur", // 13.0 kg (130 hg)
+      "charizard", // 90.5 kg (905 hg)
+    ]);
+  });
+
+  it("sorts by weight desc", () => {
+    const result = sortBy(list, "weight", "desc");
+    expect(result.map((x) => x.name)).toEqual([
+      "charizard", // 90.5 kg (905 hg)
+      "ivysaur", // 13.0 kg (130 hg)
+      "charmander", // 8.5 kg (85 hg)
+      "bulbasaur", // 6.9 kg (69 hg)
+      "pikachu", // 6.0 kg (60 hg)
+    ]);
+  });
+
+  it("treats missing weight as 0 and uses name as tiebreaker", () => {
+    const { weight: _, ...ivysaurWithoutWeight } = list[1];
+    const withMissing: FilterSortItem[] = [
+      { ...list[0], weight: 69 }, // bulbasaur
+      ivysaurWithoutWeight, // ivysaur, no weight (treated as 0)
+      { ...list[2], weight: 905 }, // charizard
+    ];
+    const result = sortBy(withMissing, "weight", "asc");
+    expect(result[0].name).toBe("ivysaur"); // missing weight = 0, comes first
+    expect(result[1].name).toBe("bulbasaur"); // weight 69
+    expect(result[2].name).toBe("charizard"); // weight 905
+  });
+
   it("empty list returns empty", () => {
     expect(sortBy([], "name", "asc")).toEqual([]);
   });

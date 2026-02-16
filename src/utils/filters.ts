@@ -10,7 +10,7 @@ export interface FilterSortItem {
   weight?: number;
 }
 
-export type SortKey = "id" | "name" | "caughtAt";
+export type SortKey = "id" | "name" | "height" | "weight" | "caughtAt";
 export type SortDir = "asc" | "desc";
 
 export function filterByName<T extends { name: string }>(
@@ -85,8 +85,7 @@ export function filterByWeightRange<T extends { weight?: number }>(
 }
 
 /**
- * Sort list by key and direction. Keys: id, name, caughtAt (timestamp).
- * Missing id/caughtAt are treated as 0 for ordering.
+ * Sort list by key and direction. Keys: id, name, height, weight, caughtAt (timestamp).
  */
 export function sortBy<T extends FilterSortItem>(
   list: T[],
@@ -102,6 +101,24 @@ export function sortBy<T extends FilterSortItem>(
         return mult * ((a.id ?? 0) - (b.id ?? 0));
       case "name":
         return mult * a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+      case "height": {
+        const aHeight = a.height ?? 0;
+        const bHeight = b.height ?? 0;
+        const heightDiff = aHeight - bHeight;
+        // If heights are equal, use name as tiebreaker
+        return heightDiff !== 0
+          ? mult * heightDiff
+          : a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+      }
+      case "weight": {
+        const aWeight = a.weight ?? 0;
+        const bWeight = b.weight ?? 0;
+        const weightDiff = aWeight - bWeight;
+        // If weights are equal, use name as tiebreaker
+        return weightDiff !== 0
+          ? mult * weightDiff
+          : a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+      }
       case "caughtAt": {
         const aTime = a.caughtAt ? new Date(a.caughtAt).getTime() : 0;
         const bTime = b.caughtAt ? new Date(b.caughtAt).getTime() : 0;

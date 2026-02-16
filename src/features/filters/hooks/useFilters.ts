@@ -17,6 +17,10 @@ export type SortOption =
   | "name-desc"
   | "id-asc"
   | "id-desc"
+  | "height-asc"
+  | "height-desc"
+  | "weight-asc"
+  | "weight-desc"
   | "caughtAt-asc"
   | "caughtAt-desc";
 
@@ -27,6 +31,10 @@ const SORT_OPTIONS: SortOption[] = [
   "name-desc",
   "id-asc",
   "id-desc",
+  "height-asc",
+  "height-desc",
+  "weight-asc",
+  "weight-desc",
   "caughtAt-asc",
   "caughtAt-desc",
 ];
