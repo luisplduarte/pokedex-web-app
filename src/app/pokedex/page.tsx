@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useMemo } from "react";
+import { Suspense, useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePokemonList } from "@/hooks/usePokemonList";
 import { usePokedexStore } from "@/store/pokedexStore";
@@ -8,7 +8,7 @@ import { MainLayout } from "@/components/layouts/MainLayout";
 import { PageHeader } from "@/components/layouts/PageHeader";
 import { Spinner } from "@/components/ui/Spinner";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
-import { Button } from "@/components/ui/Button";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import {
   PokedexTable,
   PokedexCardGrid,
@@ -43,6 +43,7 @@ function PokedexContent() {
   const filters = useFilters();
   const { nameQuery, selectedTypes, sortKey, sortDir } = filters;
   const { viewMode, setViewMode } = usePokedexViewMode();
+  const [confirmExportOpen, setConfirmExportOpen] = useState(false);
 
   const caughtPokemon = useMemo(
     () => allPokemon.filter((p) => caughtIds.has(p.id)),
@@ -77,6 +78,8 @@ function PokedexContent() {
       id: p.id,
       name: p.name,
       types: p.types,
+      height: p.height,
+      weight: p.weight,
       caughtAt: caughtAt[p.id],
       note: getNote(p.id),
     }));
@@ -87,16 +90,45 @@ function PokedexContent() {
 
   return (
     <MainLayout>
-      <PageHeader title="My Pokédex">
-        <div className="flex flex-wrap items-center gap-3">
-          <Button
+      <header className="mb-6">
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
+            My Pokédex
+          </h1>
+          <button
             type="button"
-            variant="secondary"
-            onClick={handleExportCsv}
+            onClick={() => setConfirmExportOpen(true)}
             aria-label="Export Pokédex as CSV"
+            className="ml-1 inline-flex cursor-pointer items-center justify-center rounded-none border-none bg-transparent p-1 text-zinc-900 hover:text-zinc-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-zinc-100 dark:hover:text-zinc-300"
           >
-            Export CSV
-          </Button>
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="none"
+            >
+              <path
+                d="M6 9.5L10 13.5L14 9.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M10 3.5V13.25"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+              <path
+                d="M4.75 15.5H15.25"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
         </div>
         <Link
           href="/"
@@ -104,7 +136,20 @@ function PokedexContent() {
         >
           ← Back to all Pokémon
         </Link>
-      </PageHeader>
+      </header>
+      <ConfirmDialog
+        open={confirmExportOpen}
+        title="Export Pokédex"
+        description="Do you want to download your Pokédex as a CSV file?"
+        confirmLabel="Export"
+        cancelLabel="Cancel"
+        confirmTone="primary"
+        onConfirm={() => {
+          handleExportCsv();
+          setConfirmExportOpen(false);
+        }}
+        onCancel={() => setConfirmExportOpen(false)}
+      />
       {totalFromApi != null && (
         <div className="mt-4 flex justify-center">
           <PokedexProgress total={totalFromApi} />

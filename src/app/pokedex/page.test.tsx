@@ -83,10 +83,11 @@ describe("PokedexPage", () => {
     expect(exportBtn).toBeInTheDocument();
   });
 
-  it("calls downloadCsv with CSV content and date-based filename when Export is clicked", () => {
+  it("calls downloadCsv with CSV content and date-based filename when Export is confirmed", () => {
     render(<PokedexPage />);
 
     fireEvent.click(screen.getByRole("button", { name: /export pokédex as csv/i }));
+    fireEvent.click(screen.getByRole("button", { name: /export/i }));
 
     expect(mockDownloadCsv).toHaveBeenCalledTimes(1);
     const [csvContent, filename] = mockDownloadCsv.mock.calls[0];

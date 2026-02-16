@@ -9,6 +9,7 @@ interface ConfirmDialogProps {
   description?: ReactNode;
   confirmLabel?: string;
   cancelLabel?: string;
+  confirmTone?: "danger" | "primary";
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -19,10 +20,16 @@ export function ConfirmDialog({
   description,
   confirmLabel = "Confirm",
   cancelLabel = "Cancel",
+  confirmTone = "danger",
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
   if (!open) return null;
+
+  const confirmButtonClasses =
+    confirmTone === "danger"
+      ? "shrink-0 cursor-pointer rounded-md border border-red-500 bg-red-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:bg-red-600 dark:hover:bg-red-700 dark:focus-visible:ring-offset-zinc-900"
+      : "shrink-0 cursor-pointer rounded-md border border-blue-500 bg-blue-500 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus-visible:ring-offset-zinc-900";
 
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 px-4">
@@ -52,11 +59,7 @@ export function ConfirmDialog({
           >
             {cancelLabel}
           </Button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            className="shrink-0 cursor-pointer rounded-md border border-red-500 bg-red-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:bg-red-600 dark:hover:bg-red-700 dark:focus-visible:ring-offset-zinc-900"
-          >
+          <button type="button" onClick={onConfirm} className={confirmButtonClasses}>
             {confirmLabel}
           </button>
         </div>
