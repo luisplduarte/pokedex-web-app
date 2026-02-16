@@ -2,6 +2,7 @@
 
 import { Suspense, useCallback, useMemo, useState } from "react";
 import Link from "next/link";
+import { Download } from "lucide-react";
 import { usePokemonList } from "@/hooks/usePokemonList";
 import { usePokedexStore } from "@/store/pokedexStore";
 import { MainLayout } from "@/components/layouts/MainLayout";
@@ -101,33 +102,7 @@ function PokedexContent() {
             aria-label="Export Pokédex as CSV"
             className="ml-1 inline-flex cursor-pointer items-center justify-center rounded-none border-none bg-transparent p-1 text-zinc-900 hover:text-zinc-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-zinc-100 dark:hover:text-zinc-300"
           >
-            <svg
-              aria-hidden="true"
-              focusable="false"
-              className="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="none"
-            >
-              <path
-                d="M6 9.5L10 13.5L14 9.5"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M10 3.5V13.25"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-              <path
-                d="M4.75 15.5H15.25"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            </svg>
+            <Download className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
         <Link

@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 import type { SortOption } from "../hooks/useFilters";
 import { getTypeIconUrl } from "../typeIcons";
 
@@ -110,21 +111,7 @@ export function FilterBar({
               className={`shrink-0 transition-transform ${typeFilterOpen ? "rotate-180" : ""}`}
               aria-hidden
             >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M4 6l4 4 4-4"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <ChevronDown className="h-4 w-4" />
             </span>
           </button>
           <div

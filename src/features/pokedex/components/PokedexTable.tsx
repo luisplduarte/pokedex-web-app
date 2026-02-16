@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { getTypeIconUrl } from "@/features/filters/typeIcons";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { Eye, Trash2 } from "lucide-react";
 
 /** Row shape for the Pokédex table (list item + caught/note data) */
 export interface PokedexTableRow {
@@ -147,29 +148,7 @@ export function PokedexTable({ data, onRemove }: PokedexTableProps) {
                 className="inline-flex items-center justify-center rounded-md p-1 text-white hover:bg-blue-50 hover:text-white dark:text-white dark:hover:bg-zinc-800"
                 aria-label={`View details for ${row.original.name}`}
               >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M1.5 8s2.25-4.5 6.5-4.5S14.5 8 14.5 8s-2.25 4.5-6.5 4.5S1.5 8 1.5 8Z"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <circle
-                    cx="8"
-                    cy="8"
-                    r="2"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  />
-                </svg>
+                <Eye className="h-4 w-4" aria-hidden="true" />
               </Link>
               <button
                 type="button"
@@ -177,22 +156,7 @@ export function PokedexTable({ data, onRemove }: PokedexTableProps) {
                 className="inline-flex items-center justify-center text-red-500 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-50 dark:focus-visible:ring-offset-zinc-900"
                 aria-label={`Remove ${row.original.name} from Pokédex`}
               >
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M5 7h14M10 11v6M14 11v6M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M7 7h10l-.8 11.2A1 1 0 0 1 15.2 19H8.8a1 1 0 0 1-.998-.8L7 7Z"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+                <Trash2 className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
             <ConfirmDialog
